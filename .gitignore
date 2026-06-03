@@ -7,3 +7,6 @@ db.sqlite3
 media/
 staticfiles/
 .vscode/
+secrets/
+*.xlsx
+db.sqlite3
