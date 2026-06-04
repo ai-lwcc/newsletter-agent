@@ -34,3 +34,42 @@ class Person(models.Model):
 
     def __str__(self):
         return self.full_name
+    
+class Campaign(models.Model):
+    STATUS_DRAFT = "draft"
+    STATUS_SCHEDULED = "scheduled"
+    STATUS_SENT = "sent"
+    STATUS_CANCELLED = "cancelled"
+
+    STATUS_CHOICES = [
+        (STATUS_DRAFT, "Draft"),
+        (STATUS_SCHEDULED, "Scheduled"),
+        (STATUS_SENT, "Sent"),
+        (STATUS_CANCELLED, "Cancelled"),
+    ]
+
+    title = models.CharField(max_length=200)
+    email_subject = models.CharField(max_length=200)
+    email_body = models.TextField(blank=True)
+    whatsapp_message = models.TextField(blank=True)
+
+    target_groups = models.ManyToManyField(
+        Group,
+        related_name="campaigns",
+        blank=True,
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_DRAFT,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title
