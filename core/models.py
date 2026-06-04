@@ -35,6 +35,7 @@ class Person(models.Model):
     def __str__(self):
         return self.full_name
     
+
 class Campaign(models.Model):
     STATUS_DRAFT = "draft"
     STATUS_SCHEDULED = "scheduled"
@@ -52,6 +53,12 @@ class Campaign(models.Model):
     email_subject = models.CharField(max_length=200)
     email_body = models.TextField(blank=True)
     whatsapp_message = models.TextField(blank=True)
+
+    pdf_attachment = models.FileField(
+    upload_to="campaign_pdfs/",
+    blank=True,
+    null=True,
+)
 
     target_groups = models.ManyToManyField(
         Group,

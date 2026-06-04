@@ -27,3 +27,12 @@ Campaigns represent newsletter drafts that can later be previewed, sent, or sche
 Campaigns can be created and edited in Django Admin.
 
 PDF attachments, email previews, sending, and scheduling will be added in later phases.
+
+## PDF Attachments
+
+Campaigns can include one uploaded PDF attachment.
+
+Uploaded PDFs are stored in:
+
+```txt
+media/campaign_pdfs/

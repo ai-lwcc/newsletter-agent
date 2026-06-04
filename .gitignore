@@ -10,3 +10,4 @@ staticfiles/
 secrets/
 *.xlsx
 db.sqlite3
+media/

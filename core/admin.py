@@ -30,6 +30,7 @@ class CampaignAdmin(admin.ModelAdmin):
         "title",
         "email_subject",
         "status",
+        "pdf_attachment",
         "created_at",
         "updated_at",
     )
