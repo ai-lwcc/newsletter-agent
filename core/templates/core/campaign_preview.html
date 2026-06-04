@@ -5,6 +5,12 @@
 </head>
 <body>
     <h1>Email Preview</h1>
+    
+    <p>
+    <a href="{% url 'send_campaign_test_email' campaign.id %}">
+        Send test email
+    </a>
+    </p>
 
     <h2>{{ campaign.title }}</h2>
 

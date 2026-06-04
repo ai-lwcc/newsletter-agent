@@ -47,3 +47,16 @@ Preview URL format:
 ```txt
 /campaigns/<campaign_id>/preview/
 ```
+
+## Test Email Safety
+
+During development, emails use Django's console email backend.
+
+This means emails are printed in the terminal instead of being sent to real people.
+
+Environment variables:
+
+```env
+EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+DEFAULT_FROM_EMAIL=newsletter@example.com
+TEST_RECIPIENT_EMAIL=your_email@example.com
