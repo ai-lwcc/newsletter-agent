@@ -36,3 +36,14 @@ Uploaded PDFs are stored in:
 
 ```txt
 media/campaign_pdfs/
+```
+
+## Email Preview
+
+Campaigns can be previewed before sending.
+
+Preview URL format:
+
+```txt
+/campaigns/<campaign_id>/preview/
+```

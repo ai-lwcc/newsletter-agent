@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ campaign.title }} Preview</title>
+</head>
+<body>
+    <h1>Email Preview</h1>
+
+    <h2>{{ campaign.title }}</h2>
+
+    <p><strong>Status:</strong> {{ campaign.status }}</p>
+
+    <p><strong>Email Subject:</strong> {{ campaign.email_subject }}</p>
+
+    <h3>Email Body</h3>
+    <div>
+        {{ campaign.email_body|linebreaks }}
+    </div>
+
+    <h3>WhatsApp Message</h3>
+    <div>
+        {{ campaign.whatsapp_message|linebreaks }}
+    </div>
+
+    <h3>Target Groups</h3>
+    <ul>
+        {% for group in campaign.target_groups.all %}
+            <li>{{ group.name }}</li>
+        {% empty %}
+            <li>No target groups selected.</li>
+        {% endfor %}
+    </ul>
+
+    <h3>PDF Attachment</h3>
+    {% if campaign.pdf_attachment %}
+        <p>
+            <a href="{{ campaign.pdf_attachment.url }}">
+                {{ campaign.pdf_attachment.name }}
+            </a>
+        </p>
+    {% else %}
+        <p>No PDF attached.</p>
+    {% endif %}
+</body>
+</html>
