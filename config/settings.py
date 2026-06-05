@@ -115,3 +115,9 @@ TEST_RECIPIENT_EMAIL = os.getenv(
 )
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+SEND_REAL_EMAILS = os.getenv("SEND_REAL_EMAILS", "False") == "True"
+
+MAX_EMAILS_PER_DAY = int(
+    os.getenv("MAX_EMAILS_PER_DAY", "300")
+)
