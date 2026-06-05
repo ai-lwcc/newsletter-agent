@@ -60,3 +60,24 @@ Environment variables:
 EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
 DEFAULT_FROM_EMAIL=newsletter@example.com
 TEST_RECIPIENT_EMAIL=your_email@example.com
+```
+
+## Scheduling Fields
+
+Campaigns include:
+
+- scheduled_send_time
+- dry_run_completed_at
+
+`schedule_send_time` will be used in a later scheduling phase.
+
+`dry_run_completed_at` records when a dry run was last completed.
+
+## Dry Run
+
+Campaigns can create pending delivery logs before real sending.
+
+Dry-run URL:
+
+```txt
+/campaigns/<campaign_id>/dry-run/

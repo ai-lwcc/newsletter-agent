@@ -1,0 +1,113 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
+    color: #1f2937;
+}
+
+.container {
+    max-width: 950px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.badge {
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: #e5e7eb;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+}
+
+.button {
+    display: inline-block;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: #2563eb;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.button.secondary {
+    background: #374151;
+}
+
+.button.safe {
+    background: #059669;
+}
+
+.section-title {
+    margin-top: 0;
+    color: #111827;
+}
+
+.preview-box {
+    border: 1px solid #e5e7eb;
+    background: #fafafa;
+    padding: 18px;
+    border-radius: 10px;
+    line-height: 1.6;
+}
+
+.group-list {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 0;
+    list-style: none;
+}
+
+.group-pill {
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 14px;
+}
+
+.pdf-card {
+    border: 1px dashed #9ca3af;
+    padding: 16px;
+    border-radius: 10px;
+    background: #f9fafb;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+}
+
+th {
+    background: #f9fafb;
+}

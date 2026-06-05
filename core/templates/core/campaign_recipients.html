@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Recipients</title>
+</head>
+<body>
+
+<h1>{{ campaign.title }}</h1>
+
+<h2>Recipients</h2>
+
+<p>
+Total:
+{{ recipients.count }}
+</p>
+
+<table border="1">
+
+<tr>
+    <th>Name</th>
+    <th>Email</th>
+</tr>
+
+{% for person in recipients %}
+
+<tr>
+    <td>{{ person.full_name }}</td>
+    <td>{{ person.email }}</td>
+</tr>
+
+{% empty %}
+
+<tr>
+    <td colspan="2">
+        No recipients found.
+    </td>
+</tr>
+
+{% endfor %}
+
+</table>
+
+</body>
+</html>

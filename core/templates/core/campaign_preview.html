@@ -1,51 +1,86 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html>
 <head>
     <title>{{ campaign.title }} Preview</title>
+    <link rel="stylesheet" href="{% static 'core/styles.css' %}">
 </head>
 <body>
-    <h1>Email Preview</h1>
-    
-    <p>
-    <a href="{% url 'send_campaign_test_email' campaign.id %}">
-        Send test email
-    </a>
-    </p>
 
-    <h2>{{ campaign.title }}</h2>
+<div class="container">
 
-    <p><strong>Status:</strong> {{ campaign.status }}</p>
+    <div class="card header">
+        <div>
+            <h1>{{ campaign.title }}</h1>
+            <p><strong>Email Subject:</strong> {{ campaign.email_subject }}</p>
+        </div>
 
-    <p><strong>Email Subject:</strong> {{ campaign.email_subject }}</p>
-
-    <h3>Email Body</h3>
-    <div>
-        {{ campaign.email_body|linebreaks }}
+        <span class="badge">{{ campaign.status }}</span>
     </div>
 
-    <h3>WhatsApp Message</h3>
-    <div>
-        {{ campaign.whatsapp_message|linebreaks }}
-    </div>
+    <div class="card">
+        <h2 class="section-title">Actions</h2>
 
-    <h3>Target Groups</h3>
-    <ul>
-        {% for group in campaign.target_groups.all %}
-            <li>{{ group.name }}</li>
-        {% empty %}
-            <li>No target groups selected.</li>
-        {% endfor %}
-    </ul>
-
-    <h3>PDF Attachment</h3>
-    {% if campaign.pdf_attachment %}
-        <p>
-            <a href="{{ campaign.pdf_attachment.url }}">
-                {{ campaign.pdf_attachment.name }}
+        <div class="actions">
+            <a class="button" href="{% url 'send_campaign_test_email' campaign.id %}">
+                Send Test Email
             </a>
-        </p>
-    {% else %}
-        <p>No PDF attached.</p>
-    {% endif %}
+
+            <a class="button secondary" href="{% url 'campaign_recipients' campaign.id %}">
+                View Recipients
+            </a>
+
+            <a class="button safe" href="{% url 'campaign_dry_run' campaign.id %}">
+                Create Dry Run
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 class="section-title">Email Preview</h2>
+
+        <div class="preview-box">
+            {{ campaign.email_body|linebreaks }}
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 class="section-title">WhatsApp Preview</h2>
+
+        <div class="preview-box">
+            {{ campaign.whatsapp_message|linebreaks }}
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 class="section-title">Target Groups</h2>
+
+        <ul class="group-list">
+            {% for group in campaign.target_groups.all %}
+                <li class="group-pill">{{ group.name }}</li>
+            {% empty %}
+                <li>No target groups selected.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2 class="section-title">PDF Attachment</h2>
+
+        {% if campaign.pdf_attachment %}
+            <div class="pdf-card">
+                <p><strong>Attached file:</strong></p>
+                <a href="{{ campaign.pdf_attachment.url }}">
+                    Download PDF
+                </a>
+            </div>
+        {% else %}
+            <p>No PDF attached.</p>
+        {% endif %}
+    </div>
+
+</div>
+
 </body>
 </html>
