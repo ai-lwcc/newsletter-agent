@@ -1,0 +1,81 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Newsletter Agent Dashboard</title>
+    <link rel="stylesheet" href="{% static 'core/styles.css' %}">
+</head>
+<body>
+
+<div class="container">
+
+    <div class="card">
+        <h1>Newsletter Agent Dashboard</h1>
+        <p>Manage campaigns, contacts, delivery logs, previews, dry runs, and scheduled sends.</p>
+
+        <div class="actions">
+            <a class="button" href="/admin/core/campaign/add/">
+                Create Campaign
+            </a>
+
+            <a class="button secondary" href="/admin/core/person/">
+                Manage Contacts
+            </a>
+
+            <a class="button secondary" href="/admin/core/group/">
+                Manage Groups
+            </a>
+
+            <a class="button secondary" href="/admin/core/deliverylog/">
+                Delivery Logs
+            </a>
+
+            <a class="button secondary" href="/admin/">
+                Admin Panel
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Recent Campaigns</h2>
+
+        {% if campaigns %}
+            <table>
+                <tr>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Scheduled Time</th>
+                    <th>Actions</th>
+                </tr>
+
+                {% for campaign in campaigns %}
+                    <tr>
+                        <td>{{ campaign.title }}</td>
+                        <td>{{ campaign.status }}</td>
+                        <td>{{ campaign.scheduled_send_time|default:"Not scheduled" }}</td>
+                        <td>
+                            <a href="{% url 'campaign_preview' campaign.id %}">Preview</a>
+                            |
+                            <a href="{% url 'campaign_recipients' campaign.id %}">Recipients</a>
+                            |
+                            <a href="{% url 'campaign_dry_run' campaign.id %}">Dry Run</a>
+                            |
+                            <a href="{% url 'campaign_confirm_send' campaign.id %}">Confirm Send</a>
+                            |
+                            <a href="{% url 'campaign_schedule_status' campaign.id %}">Schedule Status</a>
+                            |
+                            <a href="/admin/core/campaign/{{ campaign.id }}/change/">Edit</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p>No campaigns yet.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+</body>
+</html>

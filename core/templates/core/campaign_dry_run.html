@@ -1,49 +1,69 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html>
 <head>
     <title>{{ campaign.title }} Dry Run</title>
+    <link rel="stylesheet" href="{% static 'core/styles.css' %}">
 </head>
 <body>
 
-<h1>Dry Run Complete</h1>
+<div class="container">
 
-<h2>{{ campaign.title }}</h2>
+    <div class="card">
+        <p>
+            <a href="{% url 'dashboard' %}">← Back to Dashboard</a>
+        </p>
 
-<p><strong>Recipients found:</strong> {{ result.recipients }}</p>
-<p><strong>New pending logs created:</strong> {{ result.created }}</p>
-<p><strong>Existing logs skipped:</strong> {{ result.existing }}</p>
+        <h1>Dry Run Complete</h1>
+        <h2>{{ campaign.title }}</h2>
 
-<p>
-    <strong>No real emails were sent.</strong>
-</p>
+        <p><strong>Recipients found:</strong> {{ result.recipients }}</p>
+        <p><strong>New pending logs created:</strong> {{ result.created }}</p>
+        <p><strong>Existing logs skipped:</strong> {{ result.existing }}</p>
 
-<h3>Pending Delivery Logs</h3>
+        <div class="preview-box">
+            <strong>No real emails were sent.</strong>
+        </div>
+    </div>
 
-<table border="1">
-    <tr>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Status</th>
-    </tr>
+    <div class="card">
+        <h3>Pending Delivery Logs</h3>
 
-    {% for log in logs %}
-        <tr>
-            <td>{{ log.person.full_name }}</td>
-            <td>{{ log.person.email }}</td>
-            <td>{{ log.status }}</td>
-        </tr>
-    {% empty %}
-        <tr>
-            <td colspan="3">No delivery logs created.</td>
-        </tr>
-    {% endfor %}
-</table>
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Status</th>
+            </tr>
 
-<p>
-    <a href="{% url 'campaign_preview' campaign.id %}">
-        Back to preview
-    </a>
-</p>
+            {% for log in logs %}
+                <tr>
+                    <td>{{ log.person.full_name }}</td>
+                    <td>{{ log.person.email }}</td>
+                    <td>{{ log.status }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3">No delivery logs created.</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <div class="card">
+        <div class="actions">
+            <a class="button secondary" href="{% url 'campaign_preview' campaign.id %}">
+                Back to Preview
+            </a>
+
+            <a class="button" href="{% url 'campaign_confirm_send' campaign.id %}">
+                Confirm Send
+            </a>
+        </div>
+    </div>
+
+</div>
 
 </body>
 </html>

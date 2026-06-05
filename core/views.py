@@ -168,3 +168,14 @@ def campaign_schedule_status(request, campaign_id):
             "status": status,
         },
     )
+
+def dashboard(request):
+    campaigns = Campaign.objects.all().order_by("-created_at")[:10]
+
+    return render(
+        request,
+        "core/dashboard.html",
+        {
+            "campaigns": campaigns,
+        },
+    )

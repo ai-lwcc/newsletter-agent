@@ -10,9 +10,13 @@ from .views import (
     campaign_send_real_emails,
     campaign_retry_failed_emails,
     campaign_schedule_status,
+    dashboard,
 )
 
 urlpatterns = [
+    path(
+        "", dashboard, name="dashboard"
+    ),
     path(
         "health/",
         health_check,
@@ -29,19 +33,19 @@ urlpatterns = [
         name="send_campaign_test_email",
     ),
     path(
-    "campaigns/<int:campaign_id>/recipients/",
-    campaign_recipients,
-    name="campaign_recipients",
+        "campaigns/<int:campaign_id>/recipients/",
+        campaign_recipients,
+        name="campaign_recipients",
     ), 
     path(
-    "campaigns/<int:campaign_id>/dry-run/",
-    campaign_dry_run,
-    name="campaign_dry_run",
+        "campaigns/<int:campaign_id>/dry-run/",
+        campaign_dry_run,
+        name="campaign_dry_run",
     ),
     path(
-    "campaigns/<int:campaign_id>/confirm-send/",
-    campaign_confirm_send,
-    name="campaign_confirm_send",
+        "campaigns/<int:campaign_id>/confirm-send/",
+        campaign_confirm_send,
+        name="campaign_confirm_send",
     ),
     path(
         "campaigns/<int:campaign_id>/send-real-emails/",
@@ -49,13 +53,13 @@ urlpatterns = [
         name="campaign_send_real_emails",
     ),
     path(
-    "campaigns/<int:campaign_id>/retry-failed-emails/",
-    campaign_retry_failed_emails,
-    name="campaign_retry_failed_emails",
+        "campaigns/<int:campaign_id>/retry-failed-emails/",
+        campaign_retry_failed_emails,
+        name="campaign_retry_failed_emails",
     ),
     path(
-    "campaigns/<int:campaign_id>/schedule-status/",
-    campaign_schedule_status,
-    name="campaign_schedule_status",
+        "campaigns/<int:campaign_id>/schedule-status/",
+        campaign_schedule_status,
+        name="campaign_schedule_status",
     ),
 ]

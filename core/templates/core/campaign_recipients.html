@@ -1,44 +1,84 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html>
 <head>
     <title>Recipients</title>
+    <link rel="stylesheet" href="{% static 'core/styles.css' %}">
 </head>
 <body>
 
-<h1>{{ campaign.title }}</h1>
+<div class="container">
 
-<h2>Recipients</h2>
+    <p>
+        <a href="{% url 'dashboard' %}">← Back to Dashboard</a>
+    </p>
 
-<p>
-Total:
-{{ recipients.count }}
-</p>
+    <div class="card header">
+        <div>
+            <h1>{{ campaign.title }}</h1>
+            <p>Recipient List</p>
+        </div>
 
-<table border="1">
+        <span class="badge">
+            {{ recipients.count }} recipients
+        </span>
+    </div>
 
-<tr>
-    <th>Name</th>
-    <th>Email</th>
-</tr>
+    <div class="card">
+        <h2 class="section-title">Recipient Summary</h2>
 
-{% for person in recipients %}
+        <p>
+            These contacts currently match the campaign's selected target groups and email consent requirements.
+        </p>
 
-<tr>
-    <td>{{ person.full_name }}</td>
-    <td>{{ person.email }}</td>
-</tr>
+        <p>
+            <strong>Total Recipients:</strong>
+            {{ recipients.count }}
+        </p>
+    </div>
 
-{% empty %}
+    <div class="card">
+        <h2 class="section-title">Recipients</h2>
 
-<tr>
-    <td colspan="2">
-        No recipients found.
-    </td>
-</tr>
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+            </tr>
 
-{% endfor %}
+            {% for person in recipients %}
+                <tr>
+                    <td>{{ person.full_name }}</td>
+                    <td>{{ person.email }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="2">
+                        No recipients found.
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
 
-</table>
+    <div class="card">
+        <div class="actions">
+            <a class="button secondary" href="{% url 'campaign_preview' campaign.id %}">
+                Back to Preview
+            </a>
+
+            <a class="button safe" href="{% url 'campaign_dry_run' campaign.id %}">
+                Create Dry Run
+            </a>
+
+            <a class="button" href="{% url 'campaign_confirm_send' campaign.id %}">
+                Confirm Send
+            </a>
+        </div>
+    </div>
+
+</div>
 
 </body>
 </html>

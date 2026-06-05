@@ -10,6 +10,10 @@
 
 <div class="container">
 
+    <p>
+        <a href="{% url 'dashboard' %}">← Back to Dashboard</a>
+    </p>
+
     <div class="card header">
         <div>
             <h1>{{ campaign.title }}</h1>
@@ -20,10 +24,14 @@
     </div>
 
     <div class="card">
-        <h2 class="section-title">Actions</h2>
+        <h2 class="section-title">Campaign Workflow</h2>
+
+        <p>
+            Review the campaign, check recipients, create a dry run, then confirm sending only when everything looks correct.
+        </p>
 
         <div class="actions">
-            <a class="button" href="{% url 'send_campaign_test_email' campaign.id %}">
+            <a class="button secondary" href="{% url 'send_campaign_test_email' campaign.id %}">
                 Send Test Email
             </a>
 
@@ -38,6 +46,7 @@
             <a class="button" href="{% url 'campaign_confirm_send' campaign.id %}">
                 Confirm Send
             </a>
+
             <a class="button secondary" href="{% url 'campaign_schedule_status' campaign.id %}">
                 Schedule Status
             </a>
@@ -46,6 +55,8 @@
 
     <div class="card">
         <h2 class="section-title">Email Preview</h2>
+
+        <p><strong>Subject:</strong> {{ campaign.email_subject }}</p>
 
         <div class="preview-box">
             {{ campaign.email_body|linebreaks }}
@@ -56,7 +67,11 @@
         <h2 class="section-title">WhatsApp Preview</h2>
 
         <div class="preview-box">
-            {{ campaign.whatsapp_message|linebreaks }}
+            {% if campaign.whatsapp_message %}
+                {{ campaign.whatsapp_message|linebreaks }}
+            {% else %}
+                <p>No WhatsApp message added.</p>
+            {% endif %}
         </div>
     </div>
 

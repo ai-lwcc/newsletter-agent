@@ -10,17 +10,42 @@
 
 <div class="container">
 
+    <p>
+        <a href="{% url 'dashboard' %}">← Back to Dashboard</a>
+    </p>
+
+    <div class="card header">
+        <div>
+            <h1>Schedule Status</h1>
+            <h2>{{ campaign.title }}</h2>
+        </div>
+
+        {% if status.is_ready_for_auto_send %}
+            <span class="badge">Ready</span>
+        {% else %}
+            <span class="badge">Not Ready</span>
+        {% endif %}
+    </div>
+
     <div class="card">
-        <h1>Schedule Status</h1>
-        <h2>{{ campaign.title }}</h2>
+        <h2 class="section-title">Scheduling Details</h2>
 
         <p><strong>Campaign status:</strong> {{ campaign.status }}</p>
-        <p><strong>Scheduled send time:</strong> {{ campaign.scheduled_send_time }}</p>
+
+        <p>
+            <strong>Scheduled send time:</strong>
+            {% if campaign.scheduled_send_time %}
+                {{ campaign.scheduled_send_time }}
+            {% else %}
+                Not scheduled
+            {% endif %}
+        </p>
+
         <p><strong>Auto-send enabled:</strong> {{ campaign.automatically_send_when_due }}</p>
     </div>
 
     <div class="card">
-        <h2>Delivery Log Summary</h2>
+        <h2 class="section-title">Delivery Log Summary</h2>
 
         <p><strong>Pending:</strong> {{ status.pending_count }}</p>
         <p><strong>Sent:</strong> {{ status.sent_count }}</p>
@@ -28,13 +53,17 @@
     </div>
 
     <div class="card">
-        <h2>Readiness</h2>
+        <h2 class="section-title">Readiness Check</h2>
 
         <p><strong>Has scheduled time:</strong> {{ status.has_scheduled_time }}</p>
         <p><strong>Is due now:</strong> {{ status.is_due }}</p>
         <p><strong>Ready for auto-send:</strong> {{ status.is_ready_for_auto_send }}</p>
 
-        {% if not status.is_ready_for_auto_send %}
+        {% if status.is_ready_for_auto_send %}
+            <div class="preview-box">
+                This campaign is ready for automatic sending. Celery Beat will process it once the scheduled time is due.
+            </div>
+        {% else %}
             <div class="preview-box">
                 This campaign is not ready for automatic sending yet.
                 Make sure it is scheduled, auto-send is enabled, and pending delivery logs exist.
@@ -43,13 +72,23 @@
     </div>
 
     <div class="card">
+        <h2 class="section-title">Actions</h2>
+
         <div class="actions">
             <a class="button secondary" href="{% url 'campaign_preview' campaign.id %}">
                 Back to Preview
             </a>
 
+            <a class="button secondary" href="{% url 'campaign_recipients' campaign.id %}">
+                View Recipients
+            </a>
+
+            <a class="button safe" href="{% url 'campaign_dry_run' campaign.id %}">
+                Create Dry Run
+            </a>
+
             <a class="button" href="{% url 'campaign_confirm_send' campaign.id %}">
-                Confirm Send Page
+                Confirm Send
             </a>
         </div>
     </div>
