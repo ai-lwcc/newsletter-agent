@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 from django.utils import timezone
 
 from core.models import DeliveryLog
@@ -21,6 +21,26 @@ def get_emails_sent_today_count():
         status=DeliveryLog.STATUS_SENT,
         sent_at__date=today,
     ).count()
+
+
+def build_campaign_email(campaign, person):
+    email = EmailMessage(
+        subject=campaign.email_subject,
+        body=campaign.email_body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[person.email],
+    )
+
+    if campaign.pdf_attachment:
+        campaign.pdf_attachment.open("rb")
+        email.attach(
+            campaign.pdf_attachment.name.split("/")[-1],
+            campaign.pdf_attachment.read(),
+            "application/pdf",
+        )
+        campaign.pdf_attachment.close()
+
+    return email
 
 
 def send_pending_campaign_emails(campaign):
@@ -49,13 +69,8 @@ def send_pending_campaign_emails(campaign):
 
     for log in pending_logs:
         try:
-            send_mail(
-                subject=campaign.email_subject,
-                message=campaign.email_body,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[log.person.email],
-                fail_silently=False,
-            )
+            email = build_campaign_email(campaign, log.person)
+            email.send(fail_silently=False)
 
             log.mark_sent()
             sent_count += 1

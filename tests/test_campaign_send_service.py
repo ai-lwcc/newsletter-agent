@@ -9,7 +9,7 @@ from core.campaign_send_service import (
 )
 from core.dry_run_service import create_campaign_dry_run_logs
 from core.models import Campaign, DeliveryLog, Group, Person
-
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 @pytest.mark.django_db
 def test_send_pending_campaign_emails_blocked_when_disabled():
@@ -93,3 +93,42 @@ def test_send_pending_campaign_emails_respects_daily_limit():
 
     with pytest.raises(DailyEmailLimitExceeded):
         send_pending_campaign_emails(campaign)
+
+@pytest.mark.django_db
+@override_settings(
+    SEND_REAL_EMAILS=True,
+    MAX_EMAILS_PER_DAY=300,
+    EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+    DEFAULT_FROM_EMAIL="newsletter@example.com",
+)
+def test_send_pending_campaign_email_with_pdf_attachment():
+    group = Group.objects.create(name="Pickleball Players")
+
+    fake_pdf = SimpleUploadedFile(
+        "newsletter.pdf",
+        b"%PDF-1.4 fake pdf content",
+        content_type="application/pdf",
+    )
+
+    campaign = Campaign.objects.create(
+        title="June Newsletter",
+        email_subject="June Updates",
+        email_body="Hello everyone.",
+        pdf_attachment=fake_pdf,
+    )
+    campaign.target_groups.add(group)
+
+    person = Person.objects.create(
+        full_name="Jane Test",
+        email="jane@example.com",
+        email_consent=True,
+    )
+    person.groups.add(group)
+
+    create_campaign_dry_run_logs(campaign)
+
+    send_pending_campaign_emails(campaign)
+
+    assert len(mail.outbox) == 1
+    assert len(mail.outbox[0].attachments) == 1
+    assert mail.outbox[0].attachments[0][0].endswith(".pdf")
