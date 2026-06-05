@@ -1,0 +1,84 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Confirm Send</title>
+    <link rel="stylesheet" href="{% static 'core/styles.css' %}">
+</head>
+<body>
+
+<div class="container">
+
+    <div class="card">
+        <h1>Confirm Campaign Send</h1>
+        <h2>{{ campaign.title }}</h2>
+
+        {% if messages %}
+            {% for message in messages %}
+                <p><strong>{{ message }}</strong></p>
+            {% endfor %}
+        {% endif %}
+
+        <p><strong>Email Subject:</strong> {{ campaign.email_subject }}</p>
+        <p><strong>Pending emails:</strong> {{ pending_logs.count }}</p>
+        <p><strong>Daily limit:</strong> {{ max_emails_per_day }}</p>
+        <p><strong>Real email sending enabled:</strong> {{ send_real_emails }}</p>
+
+        {% if not send_real_emails %}
+            <div class="preview-box">
+                Real sending is currently disabled.
+                Set <strong>SEND_REAL_EMAILS=True</strong> in .env to enable real sending.
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2>Pending Recipients</h2>
+
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Status</th>
+            </tr>
+
+            {% for log in pending_logs %}
+                <tr>
+                    <td>{{ log.person.full_name }}</td>
+                    <td>{{ log.person.email }}</td>
+                    <td>{{ log.status }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3">No pending emails found. Run dry-run first.</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>Final Confirmation</h2>
+
+        <p>
+            This will attempt to send real emails for all pending delivery logs.
+        </p>
+
+        <form method="post" action="{% url 'campaign_send_real_emails' campaign.id %}">
+            {% csrf_token %}
+            <button class="button safe" type="submit">
+                Confirm Send Emails
+            </button>
+        </form>
+
+        <div class="actions">
+            <a class="button secondary" href="{% url 'campaign_preview' campaign.id %}">
+                Back to Preview
+            </a>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

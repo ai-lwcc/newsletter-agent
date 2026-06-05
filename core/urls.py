@@ -6,6 +6,8 @@ from .views import (
     campaign_recipients,
     health_check,
     send_campaign_test_email_view,
+    campaign_confirm_send,
+    campaign_send_real_emails,
 )
 
 urlpatterns = [
@@ -33,5 +35,15 @@ urlpatterns = [
     "campaigns/<int:campaign_id>/dry-run/",
     campaign_dry_run,
     name="campaign_dry_run",
+    ),
+    path(
+    "campaigns/<int:campaign_id>/confirm-send/",
+    campaign_confirm_send,
+    name="campaign_confirm_send",
+    ),
+    path(
+        "campaigns/<int:campaign_id>/send-real-emails/",
+        campaign_send_real_emails,
+        name="campaign_send_real_emails",
     ),
 ]

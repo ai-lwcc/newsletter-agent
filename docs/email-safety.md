@@ -11,3 +11,13 @@ This protects against accidentally sending newsletters to real contacts during d
 ```env
 SEND_REAL_EMAILS=False
 MAX_EMAILS_PER_DAY=300
+```
+## Confirm Send Page
+
+Real campaign sends must go through a confirmation page.
+
+URL format:
+
+```txt
+/campaigns/<campaign_id>/confirm-send/
+```
