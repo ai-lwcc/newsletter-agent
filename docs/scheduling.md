@@ -121,3 +121,19 @@ Campaigns have a schedule status page:
 ```txt
 /campaigns/<campaign_id>/schedule-status/
 ```
+## Final Scheduling Checklist
+
+Before relying on scheduled sends:
+
+- Redis is running
+- Django server is running
+- Celery worker is running
+- Celery Beat is running
+- Periodic task exists
+- Campaign has target groups
+- Campaign has pending DeliveryLogs from dry run
+- Campaign status is scheduled
+- automatically_send_when_due is true
+- scheduled_send_time is set
+
+If any of these are missing, scheduled sending will not happen.
