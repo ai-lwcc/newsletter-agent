@@ -134,3 +134,5 @@ CELERY_RESULT_BACKEND = os.getenv(
 )
 
 CELERY_TIMEZONE = "America/Toronto"
+
+EMAIL_PROVIDER = os.getenv("EMAIL_PROVIDER", "smtp")
