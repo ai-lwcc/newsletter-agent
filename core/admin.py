@@ -37,8 +37,9 @@ class CampaignAdmin(admin.ModelAdmin):
         "pdf_attachment",
         "created_at",
         "updated_at",
+        "automatically_send_when_due",
     )
-    list_filter = ("status", "target_groups", "scheduled_send_time")
+    list_filter = ("status", "target_groups", "scheduled_send_time", "automatically_send_when_due")
     search_fields = ("title", "email_subject", "email_body", "whatsapp_message")
     filter_horizontal = ("target_groups",)
 

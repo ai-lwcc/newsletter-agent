@@ -50,9 +50,13 @@ class Campaign(models.Model):
     ]
 
     scheduled_send_time = models.DateTimeField(
-    null=True,
-    blank=True,
+        null=True,
+        blank=True,
     )
+
+    automatically_send_when_due = models.BooleanField(
+        default=False,
+    )   
 
     dry_run_completed_at = models.DateTimeField(
         null=True,
