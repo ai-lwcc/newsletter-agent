@@ -92,3 +92,16 @@ To schedule a campaign:
 9. Save.
 
 Celery Beat will check every minute and trigger due campaigns.
+
+## Scheduled Send Safety Rule
+
+A campaign will only auto-send if it has pending email DeliveryLogs.
+
+This means the sender must run a dry run first.
+
+Safety requirements:
+
+- campaign status is `scheduled`
+- automatically_send_when_due is true
+- scheduled_send_time is due
+- pending email DeliveryLogs exist
