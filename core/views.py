@@ -13,6 +13,11 @@ from .campaign_send_service import (
 )
 from .retry_service import retry_failed_campaign_emails
 from .schedule_status_service import get_campaign_schedule_status
+from django.utils import timezone
+
+from .ai_service import generate_campaign_ai_draft
+from .models import Group
+
 
 def health_check(request):
     return JsonResponse({"status": "ok"})
@@ -179,3 +184,34 @@ def dashboard(request):
             "campaigns": campaigns,
         },
     )
+
+def campaign_generate_ai_draft(request, campaign_id):
+    campaign = get_object_or_404(Campaign, id=campaign_id)
+
+    ai_result = generate_campaign_ai_draft(campaign)
+
+    campaign.email_subject = ai_result.get("email_subject", campaign.email_subject)
+    campaign.email_body = ai_result.get("email_body", campaign.email_body)
+    campaign.whatsapp_message = ai_result.get(
+        "whatsapp_message",
+        campaign.whatsapp_message,
+    )
+    campaign.ai_summary = ai_result.get("summary", "")
+    campaign.ai_suggested_groups = ai_result.get("suggested_groups", [])
+    campaign.ai_generated_at = timezone.now()
+    campaign.ai_review_required = True
+
+    campaign.save(
+        update_fields=[
+            "email_subject",
+            "email_body",
+            "whatsapp_message",
+            "ai_summary",
+            "ai_suggested_groups",
+            "ai_generated_at",
+            "ai_review_required",
+            "updated_at",
+        ]
+    )
+
+    return redirect("campaign_preview", campaign_id=campaign.id)

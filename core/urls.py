@@ -11,6 +11,7 @@ from .views import (
     campaign_retry_failed_emails,
     campaign_schedule_status,
     dashboard,
+    campaign_generate_ai_draft,
 )
 
 urlpatterns = [
@@ -61,5 +62,10 @@ urlpatterns = [
         "campaigns/<int:campaign_id>/schedule-status/",
         campaign_schedule_status,
         name="campaign_schedule_status",
+    ),
+    path(
+        "campaigns/<int:campaign_id>/generate-ai-draft/",
+        campaign_generate_ai_draft,
+        name="campaign_generate_ai_draft",
     ),
 ]

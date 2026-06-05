@@ -95,6 +95,22 @@ class Campaign(models.Model):
     def __str__(self):
         return self.title
     
+    ai_summary = models.TextField(blank=True)
+
+    ai_suggested_groups = models.JSONField(
+        default=list,
+        blank=True,
+    )
+
+    ai_generated_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    ai_review_required = models.BooleanField(
+        default=False,
+    )
+    
 class DeliveryLog(models.Model):
     CHANNEL_EMAIL = "email"
     CHANNEL_WHATSAPP = "whatsapp"

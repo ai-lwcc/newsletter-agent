@@ -27,10 +27,14 @@
         <h2 class="section-title">Campaign Workflow</h2>
 
         <p>
-            Review the campaign, check recipients, create a dry run, then confirm sending only when everything looks correct.
+            Review the campaign, generate or edit the draft, check recipients, create a dry run, then confirm sending only when everything looks correct.
         </p>
 
         <div class="actions">
+            <a class="button safe" href="{% url 'campaign_generate_ai_draft' campaign.id %}">
+                Generate AI Draft
+            </a>
+
             <a class="button secondary" href="{% url 'send_campaign_test_email' campaign.id %}">
                 Send Test Email
             </a>
@@ -54,12 +58,47 @@
     </div>
 
     <div class="card">
+        <h2 class="section-title">AI Draft Summary</h2>
+
+        {% if campaign.ai_summary %}
+            <div class="preview-box">
+                {{ campaign.ai_summary|linebreaks }}
+            </div>
+
+            <p><strong>AI Review Required:</strong> {{ campaign.ai_review_required }}</p>
+            <p><strong>AI Generated At:</strong> {{ campaign.ai_generated_at }}</p>
+
+            <h3>AI Suggested Groups</h3>
+
+            <ul class="group-list">
+                {% for group in campaign.ai_suggested_groups %}
+                    <li class="group-pill">{{ group }}</li>
+                {% empty %}
+                    <li>No AI suggested groups.</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No AI draft generated yet.</p>
+
+            {% if not campaign.pdf_attachment %}
+                <div class="preview-box">
+                    Upload a PDF attachment before generating an AI draft.
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <div class="card">
         <h2 class="section-title">Email Preview</h2>
 
         <p><strong>Subject:</strong> {{ campaign.email_subject }}</p>
 
         <div class="preview-box">
-            {{ campaign.email_body|linebreaks }}
+            {% if campaign.email_body %}
+                {{ campaign.email_body|linebreaks }}
+            {% else %}
+                <p>No email body added yet.</p>
+            {% endif %}
         </div>
     </div>
 
