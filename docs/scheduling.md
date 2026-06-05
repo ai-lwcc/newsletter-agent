@@ -105,3 +105,19 @@ Safety requirements:
 - automatically_send_when_due is true
 - scheduled_send_time is due
 - pending email DeliveryLogs exist
+
+## Auto-create Periodic Tasks
+
+Instead of manually creating Celery Beat tasks in admin, run:
+
+```bash
+python manage.py setup_periodic_tasks
+```
+
+## Schedule Status Page
+
+Campaigns have a schedule status page:
+
+```txt
+/campaigns/<campaign_id>/schedule-status/
+```

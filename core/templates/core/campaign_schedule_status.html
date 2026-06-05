@@ -1,0 +1,60 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Schedule Status</title>
+    <link rel="stylesheet" href="{% static 'core/styles.css' %}">
+</head>
+<body>
+
+<div class="container">
+
+    <div class="card">
+        <h1>Schedule Status</h1>
+        <h2>{{ campaign.title }}</h2>
+
+        <p><strong>Campaign status:</strong> {{ campaign.status }}</p>
+        <p><strong>Scheduled send time:</strong> {{ campaign.scheduled_send_time }}</p>
+        <p><strong>Auto-send enabled:</strong> {{ campaign.automatically_send_when_due }}</p>
+    </div>
+
+    <div class="card">
+        <h2>Delivery Log Summary</h2>
+
+        <p><strong>Pending:</strong> {{ status.pending_count }}</p>
+        <p><strong>Sent:</strong> {{ status.sent_count }}</p>
+        <p><strong>Failed:</strong> {{ status.failed_count }}</p>
+    </div>
+
+    <div class="card">
+        <h2>Readiness</h2>
+
+        <p><strong>Has scheduled time:</strong> {{ status.has_scheduled_time }}</p>
+        <p><strong>Is due now:</strong> {{ status.is_due }}</p>
+        <p><strong>Ready for auto-send:</strong> {{ status.is_ready_for_auto_send }}</p>
+
+        {% if not status.is_ready_for_auto_send %}
+            <div class="preview-box">
+                This campaign is not ready for automatic sending yet.
+                Make sure it is scheduled, auto-send is enabled, and pending delivery logs exist.
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <div class="actions">
+            <a class="button secondary" href="{% url 'campaign_preview' campaign.id %}">
+                Back to Preview
+            </a>
+
+            <a class="button" href="{% url 'campaign_confirm_send' campaign.id %}">
+                Confirm Send Page
+            </a>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

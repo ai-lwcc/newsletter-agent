@@ -8,7 +8,8 @@ from .views import (
     send_campaign_test_email_view,
     campaign_confirm_send,
     campaign_send_real_emails,
-    campaign_retry_failed_emails
+    campaign_retry_failed_emails,
+    campaign_schedule_status,
 )
 
 urlpatterns = [
@@ -51,5 +52,10 @@ urlpatterns = [
     "campaigns/<int:campaign_id>/retry-failed-emails/",
     campaign_retry_failed_emails,
     name="campaign_retry_failed_emails",
+    ),
+    path(
+    "campaigns/<int:campaign_id>/schedule-status/",
+    campaign_schedule_status,
+    name="campaign_schedule_status",
     ),
 ]

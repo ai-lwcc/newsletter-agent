@@ -12,6 +12,7 @@ from .campaign_send_service import (
     send_pending_campaign_emails,
 )
 from .retry_service import retry_failed_campaign_emails
+from .schedule_status_service import get_campaign_schedule_status
 
 def health_check(request):
     return JsonResponse({"status": "ok"})
@@ -153,3 +154,17 @@ def campaign_retry_failed_emails(request, campaign_id):
     )
 
     return redirect("campaign_confirm_send", campaign_id=campaign.id)
+
+def campaign_schedule_status(request, campaign_id):
+    campaign = get_object_or_404(Campaign, id=campaign_id)
+
+    status = get_campaign_schedule_status(campaign)
+
+    return render(
+        request,
+        "core/campaign_schedule_status.html",
+        {
+            "campaign": campaign,
+            "status": status,
+        },
+    )
