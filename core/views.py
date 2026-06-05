@@ -83,6 +83,24 @@ def campaign_confirm_send(request, campaign_id):
         status=DeliveryLog.STATUS_PENDING,
     ).select_related("person")
 
+    sent_count = DeliveryLog.objects.filter(
+        campaign=campaign,
+        channel=DeliveryLog.CHANNEL_EMAIL,
+        status=DeliveryLog.STATUS_SENT,
+    ).count()
+
+    failed_count = DeliveryLog.objects.filter(
+        campaign=campaign,
+        channel=DeliveryLog.CHANNEL_EMAIL,
+        status=DeliveryLog.STATUS_FAILED,
+    ).count()
+
+    skipped_count = DeliveryLog.objects.filter(
+        campaign=campaign,
+        channel=DeliveryLog.CHANNEL_EMAIL,
+        status=DeliveryLog.STATUS_SKIPPED,
+    ).count()
+
     return render(
         request,
         "core/campaign_confirm_send.html",
@@ -91,6 +109,9 @@ def campaign_confirm_send(request, campaign_id):
             "pending_logs": pending_logs,
             "send_real_emails": settings.SEND_REAL_EMAILS,
             "max_emails_per_day": settings.MAX_EMAILS_PER_DAY,
+            "sent_count": sent_count,
+            "failed_count": failed_count,
+            "skipped_count": skipped_count,
         },
     )
 

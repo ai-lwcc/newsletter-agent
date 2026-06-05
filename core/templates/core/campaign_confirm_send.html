@@ -22,6 +22,9 @@
 
         <p><strong>Email Subject:</strong> {{ campaign.email_subject }}</p>
         <p><strong>Pending emails:</strong> {{ pending_logs.count }}</p>
+        <p><strong>Sent emails:</strong> {{ sent_count }}</p>
+        <p><strong>Failed emails:</strong> {{ failed_count }}</p>
+        <p><strong>Skipped emails:</strong> {{ skipped_count }}</p>
         <p><strong>Daily limit:</strong> {{ max_emails_per_day }}</p>
         <p><strong>Real email sending enabled:</strong> {{ send_real_emails }}</p>
 

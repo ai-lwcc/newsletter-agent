@@ -76,3 +76,38 @@ def test_real_send_post_blocked_when_disabled(client):
     )
 
     assert log.status == DeliveryLog.STATUS_PENDING
+
+@pytest.mark.django_db
+@override_settings(SEND_REAL_EMAILS=False, MAX_EMAILS_PER_DAY=300)
+def test_confirm_send_page_shows_delivery_summary(client):
+    group = Group.objects.create(name="Pickleball Players")
+
+    campaign = Campaign.objects.create(
+        title="June Newsletter",
+        email_subject="June Updates",
+        email_body="Hello.",
+    )
+    campaign.target_groups.add(group)
+
+    person = Person.objects.create(
+        full_name="Jane Test",
+        email="jane@example.com",
+        email_consent=True,
+    )
+    person.groups.add(group)
+
+    create_campaign_dry_run_logs(campaign)
+
+    log = DeliveryLog.objects.get(campaign=campaign, person=person)
+    log.mark_failed("Example failure")
+
+    url = reverse(
+        "campaign_confirm_send",
+        kwargs={"campaign_id": campaign.id},
+    )
+
+    response = client.get(url)
+
+    assert response.status_code == 200
+    assert b"Failed emails:" in response.content
+    assert b"1" in response.content
