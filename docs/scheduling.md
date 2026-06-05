@@ -37,3 +37,14 @@ A campaign is due for automatic sending when:
 - status is `scheduled`
 - automatically_send_when_due is `true`
 - scheduled_send_time is now or in the past
+
+## Celery and Redis Setup
+
+Redis is used as the broker for Celery.
+
+Environment variables:
+
+```env
+CELERY_BROKER_URL=redis://localhost:6379/0
+CELERY_RESULT_BACKEND=redis://localhost:6379/0
+```

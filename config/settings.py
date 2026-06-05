@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "core",
     "django_extensions",
+    "django_celery_beat",
 ]
 
 MIDDLEWARE = [
@@ -121,3 +122,15 @@ SEND_REAL_EMAILS = os.getenv("SEND_REAL_EMAILS", "False") == "True"
 MAX_EMAILS_PER_DAY = int(
     os.getenv("MAX_EMAILS_PER_DAY", "300")
 )
+
+CELERY_BROKER_URL = os.getenv(
+    "CELERY_BROKER_URL",
+    "redis://localhost:6379/0",
+)
+
+CELERY_RESULT_BACKEND = os.getenv(
+    "CELERY_RESULT_BACKEND",
+    "redis://localhost:6379/0",
+)
+
+CELERY_TIMEZONE = "America/Toronto"
