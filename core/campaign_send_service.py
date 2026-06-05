@@ -79,7 +79,18 @@ def send_pending_campaign_emails(campaign):
             log.mark_failed(str(error))
             failed_count += 1
 
+    remaining_pending = DeliveryLog.objects.filter(
+        campaign=campaign,
+        channel=DeliveryLog.CHANNEL_EMAIL,
+        status=DeliveryLog.STATUS_PENDING,
+    ).count()
+
+    if remaining_pending == 0 and sent_count > 0:
+        campaign.status = campaign.STATUS_SENT
+        campaign.save(update_fields=["status", "updated_at"])
+
     return {
         "sent": sent_count,
         "failed": failed_count,
+        "remaining_pending": remaining_pending,
     }

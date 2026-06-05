@@ -132,3 +132,36 @@ def test_send_pending_campaign_email_with_pdf_attachment():
     assert len(mail.outbox) == 1
     assert len(mail.outbox[0].attachments) == 1
     assert mail.outbox[0].attachments[0][0].endswith(".pdf")
+
+@pytest.mark.django_db
+@override_settings(
+    SEND_REAL_EMAILS=True,
+    MAX_EMAILS_PER_DAY=300,
+    EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+    DEFAULT_FROM_EMAIL="newsletter@example.com",
+)
+def test_campaign_marked_sent_when_all_pending_logs_processed():
+    group = Group.objects.create(name="Pickleball Players")
+
+    campaign = Campaign.objects.create(
+        title="June Newsletter",
+        email_subject="June Updates",
+        email_body="Hello everyone.",
+    )
+    campaign.target_groups.add(group)
+
+    person = Person.objects.create(
+        full_name="Jane Test",
+        email="jane@example.com",
+        email_consent=True,
+    )
+    person.groups.add(group)
+
+    create_campaign_dry_run_logs(campaign)
+
+    result = send_pending_campaign_emails(campaign)
+
+    campaign.refresh_from_db()
+
+    assert result["remaining_pending"] == 0
+    assert campaign.status == Campaign.STATUS_SENT
