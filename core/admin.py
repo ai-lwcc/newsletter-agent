@@ -1,7 +1,8 @@
 from django.contrib import admin
-from .models import Campaign, DeliveryLog, Group, Person
 from django.urls import reverse
 from django.utils.html import format_html
+
+from .models import Campaign, DeliveryLog, Group, Person
 
 
 @admin.register(Group)
@@ -32,24 +33,71 @@ class CampaignAdmin(admin.ModelAdmin):
         "email_subject",
         "status",
         "preview_link",
+        "automatically_send_when_due",
         "scheduled_send_time",
         "dry_run_completed_at",
         "pdf_attachment",
         "created_at",
         "updated_at",
+    )
+
+    list_filter = (
+        "status",
+        "target_groups",
+        "scheduled_send_time",
         "automatically_send_when_due",
     )
-    list_filter = ("status", "target_groups", "scheduled_send_time", "automatically_send_when_due")
-    search_fields = ("title", "email_subject", "email_body", "whatsapp_message")
+
+    search_fields = (
+        "title",
+        "email_subject",
+        "email_body",
+        "whatsapp_message",
+    )
+
     filter_horizontal = ("target_groups",)
 
+    readonly_fields = (
+        "preview_page",
+        "dry_run_completed_at",
+    )
+
+    fieldsets = (
+        (
+            "Campaign Content",
+            {
+                "fields": (
+                    "title",
+                    "email_subject",
+                    "email_body",
+                    "whatsapp_message",
+                    "pdf_attachment",
+                    "target_groups",
+                )
+            },
+        ),
+        (
+            "Sending Status",
+            {
+                "fields": (
+                    "status",
+                    "scheduled_send_time",
+                    "automatically_send_when_due",
+                    "dry_run_completed_at",
+                    "preview_page",
+                )
+            },
+        ),
+    )
+
     def preview_link(self, obj):
+        if not obj.id:
+            return "-"
+
         url = reverse("campaign_preview", kwargs={"campaign_id": obj.id})
         return format_html('<a href="{}">Preview</a>', url)
 
     preview_link.short_description = "Preview"
-
-    readonly_fields = ("preview_page",)
 
     def preview_page(self, obj):
         if not obj.id:

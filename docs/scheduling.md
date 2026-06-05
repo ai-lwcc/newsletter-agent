@@ -76,3 +76,19 @@ Name: Send due scheduled campaigns every minute
 Task: core.tasks.send_due_scheduled_campaigns
 Interval: every 1 minute
 Enabled: true
+
+## How to Schedule a Campaign in Admin
+
+To schedule a campaign:
+
+1. Create or edit a campaign.
+2. Select target groups.
+3. Run preview.
+4. View recipients.
+5. Create dry run delivery logs.
+6. Set campaign status to `scheduled`.
+7. Set `scheduled_send_time`.
+8. Check `automatically_send_when_due`.
+9. Save.
+
+Celery Beat will check every minute and trigger due campaigns.
