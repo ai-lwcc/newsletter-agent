@@ -11,7 +11,7 @@ from .campaign_send_service import (
     RealEmailSendingDisabled,
     send_pending_campaign_emails,
 )
-
+from .retry_service import retry_failed_campaign_emails
 
 def health_check(request):
     return JsonResponse({"status": "ok"})
@@ -135,5 +135,21 @@ def campaign_send_real_emails(request, campaign_id):
 
     except DailyEmailLimitExceeded as error:
         messages.error(request, str(error))
+
+    return redirect("campaign_confirm_send", campaign_id=campaign.id)
+
+
+def campaign_retry_failed_emails(request, campaign_id):
+    if request.method != "POST":
+        return redirect("campaign_confirm_send", campaign_id=campaign_id)
+
+    campaign = get_object_or_404(Campaign, id=campaign_id)
+
+    result = retry_failed_campaign_emails(campaign)
+
+    messages.success(
+        request,
+        f"Retried failed emails. Moved to pending: {result['retried']}.",
+    )
 
     return redirect("campaign_confirm_send", campaign_id=campaign.id)

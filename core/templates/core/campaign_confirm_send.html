@@ -54,7 +54,9 @@
                 </tr>
             {% empty %}
                 <tr>
-                    <td colspan="3">No pending emails found. Run dry-run first.</td>
+                    <td colspan="3">
+                        No pending emails found. Run dry-run first.
+                    </td>
                 </tr>
             {% endfor %}
         </table>
@@ -67,17 +69,26 @@
             This will attempt to send real emails for all pending delivery logs.
         </p>
 
-        <form method="post" action="{% url 'campaign_send_real_emails' campaign.id %}">
-            {% csrf_token %}
-            <button class="button safe" type="submit">
-                Confirm Send Emails
-            </button>
-        </form>
-
         <div class="actions">
+
+            <form method="post" action="{% url 'campaign_send_real_emails' campaign.id %}">
+                {% csrf_token %}
+                <button class="button safe" type="submit">
+                    Confirm Send Emails
+                </button>
+            </form>
+
+            <form method="post" action="{% url 'campaign_retry_failed_emails' campaign.id %}">
+                {% csrf_token %}
+                <button class="button secondary" type="submit">
+                    Retry Failed Emails
+                </button>
+            </form>
+
             <a class="button secondary" href="{% url 'campaign_preview' campaign.id %}">
                 Back to Preview
             </a>
+
         </div>
     </div>
 
