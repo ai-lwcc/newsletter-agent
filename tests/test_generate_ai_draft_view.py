@@ -5,7 +5,7 @@ from core.models import Campaign, Group
 
 
 @pytest.mark.django_db
-def test_generate_ai_draft_view_updates_campaign(client, monkeypatch):
+def test_generate_ai_draft_view_queues_task(client, monkeypatch):
     Group.objects.create(name="General Newsletter")
 
     campaign = Campaign.objects.create(
@@ -15,18 +15,15 @@ def test_generate_ai_draft_view_updates_campaign(client, monkeypatch):
         whatsapp_message="Old WhatsApp",
     )
 
-    def fake_generate_campaign_ai_draft(campaign):
-        return {
-            "email_subject": "AI Subject",
-            "email_body": "AI Email Body",
-            "whatsapp_message": "AI WhatsApp Message",
-            "suggested_groups": ["General Newsletter"],
-            "summary": "AI Summary",
-        }
+    queued_campaign_ids = []
+
+    class FakeTask:
+        def delay(self, campaign_id):
+            queued_campaign_ids.append(campaign_id)
 
     monkeypatch.setattr(
-        "core.views.generate_campaign_ai_draft",
-        fake_generate_campaign_ai_draft,
+        "core.views.generate_campaign_ai_draft_task",
+        FakeTask(),
     )
 
     url = reverse(
@@ -39,9 +36,8 @@ def test_generate_ai_draft_view_updates_campaign(client, monkeypatch):
     campaign.refresh_from_db()
 
     assert response.status_code == 302
-    assert campaign.email_subject == "AI Subject"
-    assert campaign.email_body == "AI Email Body"
-    assert campaign.whatsapp_message == "AI WhatsApp Message"
-    assert campaign.ai_summary == "AI Summary"
-    assert campaign.ai_suggested_groups == ["General Newsletter"]
-    assert campaign.ai_review_required is True
+    assert campaign.email_subject == "Old Subject"
+    assert campaign.email_body == "Old Body"
+    assert campaign.whatsapp_message == "Old WhatsApp"
+    assert campaign.ai_status == Campaign.AI_PENDING
+    assert queued_campaign_ids == [campaign.id]

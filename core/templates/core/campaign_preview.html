@@ -50,6 +50,10 @@
                 </a>
             {% endif %}
 
+            <a class="button secondary" href="/admin/core/campaign/{{ campaign.id }}/change/">
+                Edit Campaign
+            </a>
+
             <a class="button secondary" href="{% url 'send_campaign_test_email' campaign.id %}">
                 Send Test Email
             </a>
@@ -69,7 +73,7 @@
             <a class="button secondary" href="{% url 'campaign_schedule_status' campaign.id %}">
                 Schedule Status
             </a>
-
+            
         </div>
     </div>
 

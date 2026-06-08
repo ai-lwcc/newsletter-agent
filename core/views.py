@@ -63,7 +63,24 @@ def campaign_recipients(request, campaign_id):
     )
 
 def campaign_dry_run(request, campaign_id):
-    campaign = get_object_or_404(Campaign, id=campaign_id)
+    campaign = get_object_or_404(
+        Campaign,
+        id=campaign_id,
+    )
+
+    if campaign.ai_review_required:
+        messages.error(
+            request,
+            (
+                "Please review and accept the AI suggested groups "
+                "before creating a dry run."
+            ),
+        )
+
+        return redirect(
+            "campaign_preview",
+            campaign_id=campaign.id,
+        )
 
     result = create_campaign_dry_run_logs(campaign)
 
@@ -81,6 +98,7 @@ def campaign_dry_run(request, campaign_id):
             "logs": logs,
         },
     )
+
 
 def campaign_confirm_send(request, campaign_id):
     campaign = get_object_or_404(Campaign, id=campaign_id)
