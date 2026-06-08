@@ -31,8 +31,15 @@
         <h2 class="section-title">Campaign Workflow</h2>
 
         <p>
-            Review the campaign, generate or edit the draft, check recipients, create a dry run, then confirm sending only when everything looks correct.
+            Review the campaign, generate or edit the draft, check recipients, create a dry run,
+            then confirm sending only when everything looks correct.
         </p>
+
+        {% if campaign.ai_review_required %}
+            <div class="preview-box">
+                AI suggested groups need review. Accept the suggested groups before creating a dry run.
+            </div>
+        {% endif %}
 
         <div class="actions">
 
@@ -73,7 +80,7 @@
             <a class="button secondary" href="{% url 'campaign_schedule_status' campaign.id %}">
                 Schedule Status
             </a>
-            
+
         </div>
     </div>
 
@@ -109,6 +116,20 @@
     </div>
 
     <div class="card">
+        <h2 class="section-title">AI Settings</h2>
+
+        <p>
+            <strong>Email Length:</strong>
+            {{ campaign.email_length }}
+        </p>
+
+        <p>
+            <strong>Tone:</strong>
+            {{ campaign.tone }}
+        </p>
+    </div>
+
+    <div class="card">
         <h2 class="section-title">AI Draft Summary</h2>
 
         {% if campaign.ai_summary %}
@@ -139,7 +160,6 @@
 
             {% if campaign.ai_suggested_groups %}
                 <div class="actions">
-
                     {% if campaign.ai_review_required %}
                         <a
                             class="button safe"
@@ -152,7 +172,6 @@
                             AI Groups Accepted
                         </span>
                     {% endif %}
-
                 </div>
             {% endif %}
 

@@ -8,11 +8,11 @@ from core.models import Group
 from core.pdf_service import extract_text_from_pdf
 
 
-
 AI_MODEL = os.getenv(
     "AI_MODEL",
-    "llama3.1:8b-instruct-q4_K_M"
+    "llama3.1:8b-instruct-q4_K_M",
 )
+
 
 def extract_json_from_text(text):
     """
@@ -38,6 +38,53 @@ def extract_json_from_text(text):
     return json.loads(match.group(0))
 
 
+def get_email_length_rules(email_length):
+    if email_length == "medium":
+        return (
+            "Write a medium-length email. "
+            "Use 3 to 5 short paragraphs. "
+            "Include 2 to 4 key highlights from the PDF."
+        )
+
+    if email_length == "long":
+        return (
+            "Write a longer newsletter-style email. "
+            "Use 5 to 7 short paragraphs. "
+            "Include several key highlights, but still do not replace the PDF."
+        )
+
+    return (
+        "Write a short accompanying email. "
+        "Use 2 to 4 short paragraphs only. "
+        "Include only 1 to 3 key highlights from the PDF."
+    )
+
+
+def get_tone_rules(tone):
+    if tone == "warm":
+        return (
+            "Use a warm, friendly, and appreciative tone. "
+            "Make the message feel welcoming and human."
+        )
+
+    if tone == "donor":
+        return (
+            "Use a donor-focused tone. "
+            "Emphasize gratitude, impact, generosity, and continued support."
+        )
+
+    if tone == "church":
+        return (
+            "Use a church and community-focused tone. "
+            "Emphasize partnership, service, care, community, and shared mission."
+        )
+
+    return (
+        "Use a professional nonprofit communication tone. "
+        "Keep the message clear, polished, and respectful."
+    )
+
+
 def generate_campaign_ai_draft(campaign):
     if not campaign.pdf_attachment:
         raise ValueError(
@@ -49,6 +96,7 @@ def generate_campaign_ai_draft(campaign):
     print("\n========== PDF LENGTH ==========")
     print(len(pdf_text))
     print("================================\n")
+
     print("\n========== PDF PREVIEW ==========")
     print(pdf_text[:1000])
     print("=================================\n")
@@ -57,14 +105,20 @@ def generate_campaign_ai_draft(campaign):
         Group.objects.values_list("name", flat=True)
     )
 
+    email_length = getattr(campaign, "email_length", "short")
+    tone = getattr(campaign, "tone", "professional")
+
+    email_length_rules = get_email_length_rules(email_length)
+    tone_rules = get_tone_rules(tone)
+
     prompt = f"""
 You are an experienced nonprofit communications assistant.
 
 Your job is NOT to summarize the entire PDF in detail.
 
-Your job is to write a SHORT email message that will be sent together with the attached PDF.
+Your job is to write an email message that will be sent together with the attached PDF.
 
-The PDF itself will be attached to the email, so the email body should only briefly introduce the attachment and encourage the reader to open it.
+The PDF itself will be attached to the email, so the email body should introduce the attachment and encourage the reader to open it.
 
 Return ONLY valid JSON.
 
@@ -87,6 +141,22 @@ The JSON MUST match this exact structure:
 AVAILABLE GROUPS:
 {available_groups}
 
+USER SELECTED SETTINGS:
+
+Email Length:
+{email_length}
+
+Tone:
+{tone}
+
+EMAIL LENGTH RULES:
+{email_length_rules}
+
+TONE RULES:
+{tone_rules}
+
+WRITING RULES:
+
 WRITING RULES:
 
 1. email_subject:
@@ -94,32 +164,34 @@ WRITING RULES:
    - Maximum 12 words.
 
 2. email_body:
-   - Short accompanying email.
-   - 2 to 4 short paragraphs only.
+   - This email is only an accompanying message for the attached PDF.
    - Do not restate the whole PDF.
-   - Do not list every section of the PDF.
    - Mention that the full PDF is attached.
    - Include only 1 to 3 key highlights from the PDF.
-   - Use a warm, professional nonprofit tone.
-   - End with:
-     Living Water Counselling Centre
+   - End with: Living Water Counselling Centre
 
-3. whatsapp_message:
+3. Length rules:
+   - If EMAIL LENGTH is short: write 2 short paragraphs.
+   - If EMAIL LENGTH is medium: write 3 to 4 short paragraphs.
+   - If EMAIL LENGTH is long: write 4 to 6 paragraphs.
+
+4. Tone rules:
+   - professional: clear, polished, organizational.
+   - warm: friendly, welcoming, and encouraging.
+   - donor: emphasize gratitude, impact, and support.
+   - church: emphasize community, partnership, care, and service.
+
+5. whatsapp_message:
    - Maximum 500 characters.
-   - Short message that tells people the PDF/report/newsletter is attached or available by email.
-   - Do not include too much detail.
+   - Short message telling people the PDF/report/newsletter is attached or available by email.
 
-4. summary:
+6. summary:
    - Internal summary only.
    - Maximum 3 sentences.
-   - Describe what the PDF is about.
 
-5. suggested_groups:
+7. suggested_groups:
    - Choose only from AVAILABLE GROUPS.
-   - Select groups that would reasonably need to receive this PDF.
-   - If the PDF is an annual report, prioritize supporters, sponsors, donors, church partners, board members, volunteers, and general newsletter groups if those exist.
-   - If no clear match exists and "General Newsletter" exists, use ["General Newsletter"].
-   - Never invent group names that are not in AVAILABLE GROUPS.
+   - Never invent group names.
 
 IMPORTANT:
 The email should sound like it is accompanying an attachment, not replacing the attachment.

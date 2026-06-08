@@ -37,6 +37,8 @@ def test_ai_campaign_create_creates_campaign(client, monkeypatch):
         {
             "title": "AI Annual Report Campaign",
             "pdf_attachment": fake_pdf,
+            "email_length": "short",
+            "tone": "professional",
         },
     )
 
@@ -47,22 +49,22 @@ def test_ai_campaign_create_creates_campaign(client, monkeypatch):
     assert campaign.email_body == ""
     assert campaign.whatsapp_message == ""
     assert campaign.ai_status == Campaign.AI_PENDING
+    assert campaign.email_length == "short"
+    assert campaign.tone == "professional"
     assert queued_campaign_ids == [campaign.id]
+
 
 @pytest.mark.django_db
 def test_ai_campaign_create_can_set_scheduling(client, monkeypatch):
-    def fake_generate_campaign_ai_draft(campaign):
-        return {
-            "email_subject": "AI Subject",
-            "email_body": "AI Email Body",
-            "whatsapp_message": "AI WhatsApp Message",
-            "suggested_groups": ["General Newsletter"],
-            "summary": "AI Summary",
-        }
+    queued_campaign_ids = []
+
+    class FakeTask:
+        def delay(self, campaign_id):
+            queued_campaign_ids.append(campaign_id)
 
     monkeypatch.setattr(
-        "core.views.generate_campaign_ai_draft",
-        fake_generate_campaign_ai_draft,
+        "core.views.generate_campaign_ai_draft_task",
+        FakeTask(),
     )
 
     fake_pdf = SimpleUploadedFile(
@@ -78,6 +80,8 @@ def test_ai_campaign_create_can_set_scheduling(client, monkeypatch):
             "pdf_attachment": fake_pdf,
             "scheduled_send_time": "2026-06-15T10:00",
             "automatically_send_when_due": "on",
+            "email_length": "medium",
+            "tone": "donor",
         },
     )
 
@@ -87,3 +91,7 @@ def test_ai_campaign_create_can_set_scheduling(client, monkeypatch):
     assert campaign.status == Campaign.STATUS_SCHEDULED
     assert campaign.scheduled_send_time is not None
     assert campaign.automatically_send_when_due is True
+    assert campaign.ai_status == Campaign.AI_PENDING
+    assert campaign.email_length == "medium"
+    assert campaign.tone == "donor"
+    assert queued_campaign_ids == [campaign.id]

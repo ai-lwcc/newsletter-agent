@@ -128,6 +128,16 @@ class Campaign(models.Model):
         choices=AI_STATUS_CHOICES,
         default=AI_PENDING,
     )
+
+    email_length = models.CharField(
+        max_length=20,
+        default="short",
+    )
+
+    tone = models.CharField(
+        max_length=20,
+        default="professional",
+    )
     
 class DeliveryLog(models.Model):
     CHANNEL_EMAIL = "email"

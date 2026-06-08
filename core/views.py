@@ -257,6 +257,8 @@ def ai_campaign_create(request):
                 automatically_send_when_due=automatically_send_when_due,
                 status=campaign_status,
                 ai_status=Campaign.AI_PENDING,
+                email_length=form.cleaned_data["email_length"],
+                tone=form.cleaned_data["tone"],
             )
 
             generate_campaign_ai_draft_task.delay(campaign.id)
