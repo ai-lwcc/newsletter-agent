@@ -1,30 +1,39 @@
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, render, redirect
-from .email_service import send_campaign_test_email
-from .models import Campaign, DeliveryLog
-from .recipient_service import get_campaign_recipients
-from .dry_run_service import create_campaign_dry_run_logs
 from django.conf import settings
 from django.contrib import messages
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+
+from core.pdf_cover_service import generate_pdf_cover_image
+from core.tasks import generate_campaign_ai_draft_task
+
 from .campaign_send_service import (
     DailyEmailLimitExceeded,
     RealEmailSendingDisabled,
     send_pending_campaign_emails,
 )
+from .dry_run_service import create_campaign_dry_run_logs
+from .email_service import send_campaign_test_email
+from .forms import AICampaignCreateForm
+from .models import Campaign, DeliveryLog, Group
+from .recipient_service import get_campaign_recipients
 from .retry_service import retry_failed_campaign_emails
 from .schedule_status_service import get_campaign_schedule_status
-from django.utils import timezone
-
-from .ai_service import generate_campaign_ai_draft
-from .models import Group
-from .forms import AICampaignCreateForm
-from core.tasks import generate_campaign_ai_draft_task
-from core.pdf_cover_service import generate_pdf_cover_image
-from core.email_provider import get_email_provider
 
 
 def health_check(request):
     return JsonResponse({"status": "ok"})
+
+
+def dashboard(request):
+    campaigns = Campaign.objects.all().order_by("-created_at")[:10]
+
+    return render(
+        request,
+        "core/dashboard.html",
+        {
+            "campaigns": campaigns,
+        },
+    )
 
 
 def campaign_preview(request, campaign_id):
@@ -38,12 +47,14 @@ def campaign_preview(request, campaign_id):
         },
     )
 
+
 def send_campaign_test_email_view(request, campaign_id):
     campaign = get_object_or_404(Campaign, id=campaign_id)
 
     send_campaign_test_email(campaign)
 
     return HttpResponse("Test email sent.")
+
 
 def campaign_recipients(request, campaign_id):
     campaign = get_object_or_404(
@@ -63,6 +74,7 @@ def campaign_recipients(request, campaign_id):
             "recipients": recipients,
         },
     )
+
 
 def campaign_dry_run(request, campaign_id):
     campaign = get_object_or_404(
@@ -182,6 +194,7 @@ def campaign_retry_failed_emails(request, campaign_id):
 
     return redirect("campaign_confirm_send", campaign_id=campaign.id)
 
+
 def campaign_schedule_status(request, campaign_id):
     campaign = get_object_or_404(Campaign, id=campaign_id)
 
@@ -196,25 +209,17 @@ def campaign_schedule_status(request, campaign_id):
         },
     )
 
-def dashboard(request):
-    campaigns = Campaign.objects.all().order_by("-created_at")[:10]
-
-    return render(
-        request,
-        "core/dashboard.html",
-        {
-            "campaigns": campaigns,
-        },
-    )
 
 def campaign_generate_ai_draft(request, campaign_id):
     campaign = get_object_or_404(Campaign, id=campaign_id)
+
     campaign.ai_status = Campaign.AI_PENDING
     campaign.save(update_fields=["ai_status"])
 
     generate_campaign_ai_draft_task.delay(campaign.id)
 
     return redirect("campaign_preview", campaign_id=campaign.id)
+
 
 def campaign_accept_ai_groups(request, campaign_id):
     campaign = get_object_or_404(Campaign, id=campaign_id)
@@ -230,6 +235,7 @@ def campaign_accept_ai_groups(request, campaign_id):
     campaign.save(update_fields=["ai_review_required", "updated_at"])
 
     return redirect("campaign_preview", campaign_id=campaign.id)
+
 
 def ai_campaign_create(request):
     if request.method == "POST":
@@ -253,6 +259,7 @@ def ai_campaign_create(request):
                 title=title,
                 email_subject="",
                 email_body="",
+                email_body_zh="",
                 whatsapp_message="",
                 pdf_attachment=form.cleaned_data["pdf_attachment"],
                 scheduled_send_time=scheduled_send_time,
@@ -262,8 +269,8 @@ def ai_campaign_create(request):
                 email_length=form.cleaned_data["email_length"],
                 tone=form.cleaned_data["tone"],
                 heyzine_url=form.cleaned_data.get("heyzine_url", ""),
-                
             )
+
             generate_pdf_cover_image(campaign)
             generate_campaign_ai_draft_task.delay(campaign.id)
 

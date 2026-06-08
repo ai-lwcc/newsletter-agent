@@ -133,6 +133,7 @@ The JSON MUST match this exact structure:
 {{
   "email_subject": "",
   "email_body": "",
+  "email_body_zh": "",
   "whatsapp_message": "",
   "suggested_groups": [],
   "summary": ""
@@ -154,8 +155,6 @@ EMAIL LENGTH RULES:
 
 TONE RULES:
 {tone_rules}
-
-WRITING RULES:
 
 WRITING RULES:
 
@@ -193,11 +192,27 @@ WRITING RULES:
    - Choose only from AVAILABLE GROUPS.
    - Never invent group names.
 
+8. email_body_zh:
+   - Write a professional Traditional Chinese version of the email.
+   - Use Traditional Chinese characters only.
+   - Never use Simplified Chinese characters.
+   - The Chinese version should sound natural to Cantonese-speaking and Traditional Chinese readers.
+   - Do not perform a word-for-word translation.
+   - Rewrite the message naturally while preserving the meaning, tone, and intent.
+   - Use nonprofit and community-oriented language appropriate for Living Water Counselling Centre.
+   - Use complete, grammatically correct Traditional Chinese sentences.
+   - Do not output transliterations, mixed languages, corrupted characters, or placeholder text.
+   - The Chinese version should be similar in length to the English version.
+
 IMPORTANT:
 The email should sound like it is accompanying an attachment, not replacing the attachment.
+If generating Chinese text, output fluent Traditional Chinese suitable for Hong Kong and Chinese communities in Canada.
+Never output Simplified Chinese.
+Never output garbled, corrupted, or nonsensical Chinese text.
+
 
 PDF CONTENT:
-{pdf_text[:8000]}
+{pdf_text[:6000]}
 """
 
     response = ollama.chat(
@@ -220,10 +235,12 @@ PDF CONTENT:
         format="json",
         options={
             "temperature": 0,
-            "num_predict": 1200,
+            "num_predict": 2500,
         },
     )
 
     content = response["message"]["content"]
-
+    print("========== RAW AI RESPONSE ==========")
+    print(content)
+    print("=====================================")
     return extract_json_from_text(content)

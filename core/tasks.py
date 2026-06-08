@@ -1,13 +1,17 @@
 from celery import shared_task
 from django.utils import timezone
+
+from core.ai_service import generate_campaign_ai_draft
 from core.campaign_send_service import (
     DailyEmailLimitExceeded,
     RealEmailSendingDisabled,
     send_pending_campaign_emails,
 )
-from core.scheduling_service import get_due_scheduled_campaigns
 from core.models import Campaign
-from core.ai_service import generate_campaign_ai_draft
+from core.scheduling_service import get_due_scheduled_campaigns
+import logging
+
+logger = logging.getLogger(__name__)
 
 @shared_task
 def debug_celery_task():
@@ -56,6 +60,7 @@ def send_due_scheduled_campaigns():
 
     return results
 
+
 @shared_task
 def generate_campaign_ai_draft_task(campaign_id):
     campaign = Campaign.objects.get(id=campaign_id)
@@ -65,7 +70,9 @@ def generate_campaign_ai_draft_task(campaign_id):
         campaign.save(update_fields=["ai_status"])
 
         ai_result = generate_campaign_ai_draft(campaign)
-
+        logger.warning("========== AI RESULT ==========")
+        logger.warning(ai_result)
+        logger.warning("===============================")
         campaign.email_subject = ai_result.get(
             "email_subject",
             campaign.email_subject,
@@ -74,6 +81,11 @@ def generate_campaign_ai_draft_task(campaign_id):
         campaign.email_body = ai_result.get(
             "email_body",
             campaign.email_body,
+        )
+
+        campaign.email_body_zh = ai_result.get(
+            "email_body_zh",
+            "",
         )
 
         campaign.whatsapp_message = ai_result.get(
@@ -95,10 +107,31 @@ def generate_campaign_ai_draft_task(campaign_id):
         campaign.ai_review_required = True
         campaign.ai_status = Campaign.AI_COMPLETED
 
-        campaign.save()
+        campaign.save(
+            update_fields=[
+                "email_subject",
+                "email_body",
+                "email_body_zh",
+                "whatsapp_message",
+                "ai_summary",
+                "ai_suggested_groups",
+                "ai_generated_at",
+                "ai_review_required",
+                "ai_status",
+                "updated_at",
+            ]
+        )
 
-    except Exception:
+    except Exception as error:
         campaign.ai_status = Campaign.AI_FAILED
-        campaign.save(update_fields=["ai_status"])
+        campaign.ai_summary = f"AI generation failed: {error}"
+
+        campaign.save(
+            update_fields=[
+                "ai_status",
+                "ai_summary",
+                "updated_at",
+            ]
+        )
 
         raise

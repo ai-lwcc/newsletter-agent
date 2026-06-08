@@ -206,6 +206,18 @@
     </div>
 
     <div class="card">
+        <h2 class="section-title">Traditional Chinese Email Preview</h2>
+
+        <div class="preview-box">
+            {% if campaign.email_body_zh %}
+                {{ campaign.email_body_zh|linebreaks }}
+            {% else %}
+                <p>No Traditional Chinese email body added yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
         <h2 class="section-title">WhatsApp Preview</h2>
 
         <div class="preview-box">

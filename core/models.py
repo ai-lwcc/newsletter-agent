@@ -146,6 +146,8 @@ class Campaign(models.Model):
         blank=True,
         null=True,
     )
+
+    email_body_zh = models.TextField(blank=True)
     
 class DeliveryLog(models.Model):
     CHANNEL_EMAIL = "email"
