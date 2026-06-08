@@ -110,6 +110,24 @@ class Campaign(models.Model):
     ai_review_required = models.BooleanField(
         default=False,
     )
+
+    AI_PENDING = "pending"
+    AI_PROCESSING = "processing"
+    AI_COMPLETED = "completed"
+    AI_FAILED = "failed"
+
+    AI_STATUS_CHOICES = [
+        (AI_PENDING, "Pending"),
+        (AI_PROCESSING, "Processing"),
+        (AI_COMPLETED, "Completed"),
+        (AI_FAILED, "Failed"),
+    ]
+
+    ai_status = models.CharField(
+        max_length=20,
+        choices=AI_STATUS_CHOICES,
+        default=AI_PENDING,
+    )
     
 class DeliveryLog(models.Model):
     CHANNEL_EMAIL = "email"

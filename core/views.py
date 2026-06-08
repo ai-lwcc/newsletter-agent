@@ -17,6 +17,8 @@ from django.utils import timezone
 
 from .ai_service import generate_campaign_ai_draft
 from .models import Group
+from .forms import AICampaignCreateForm
+from core.tasks import generate_campaign_ai_draft_task
 
 
 def health_check(request):
@@ -187,31 +189,69 @@ def dashboard(request):
 
 def campaign_generate_ai_draft(request, campaign_id):
     campaign = get_object_or_404(Campaign, id=campaign_id)
+    campaign.ai_status = Campaign.AI_PENDING
+    campaign.save(update_fields=["ai_status"])
 
-    ai_result = generate_campaign_ai_draft(campaign)
-
-    campaign.email_subject = ai_result.get("email_subject", campaign.email_subject)
-    campaign.email_body = ai_result.get("email_body", campaign.email_body)
-    campaign.whatsapp_message = ai_result.get(
-        "whatsapp_message",
-        campaign.whatsapp_message,
-    )
-    campaign.ai_summary = ai_result.get("summary", "")
-    campaign.ai_suggested_groups = ai_result.get("suggested_groups", [])
-    campaign.ai_generated_at = timezone.now()
-    campaign.ai_review_required = True
-
-    campaign.save(
-        update_fields=[
-            "email_subject",
-            "email_body",
-            "whatsapp_message",
-            "ai_summary",
-            "ai_suggested_groups",
-            "ai_generated_at",
-            "ai_review_required",
-            "updated_at",
-        ]
-    )
+    generate_campaign_ai_draft_task.delay(campaign.id)
 
     return redirect("campaign_preview", campaign_id=campaign.id)
+
+def campaign_accept_ai_groups(request, campaign_id):
+    campaign = get_object_or_404(Campaign, id=campaign_id)
+
+    suggested_group_names = campaign.ai_suggested_groups or []
+
+    groups = Group.objects.filter(
+        name__in=suggested_group_names,
+    )
+
+    campaign.target_groups.set(groups)
+    campaign.ai_review_required = False
+    campaign.save(update_fields=["ai_review_required", "updated_at"])
+
+    return redirect("campaign_preview", campaign_id=campaign.id)
+
+def ai_campaign_create(request):
+    if request.method == "POST":
+        form = AICampaignCreateForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            title = form.cleaned_data.get("title") or "AI Generated Campaign"
+
+            scheduled_send_time = form.cleaned_data.get("scheduled_send_time")
+            automatically_send_when_due = form.cleaned_data.get(
+                "automatically_send_when_due",
+                False,
+            )
+
+            campaign_status = Campaign.STATUS_DRAFT
+
+            if scheduled_send_time and automatically_send_when_due:
+                campaign_status = Campaign.STATUS_SCHEDULED
+
+            campaign = Campaign.objects.create(
+                title=title,
+                email_subject="",
+                email_body="",
+                whatsapp_message="",
+                pdf_attachment=form.cleaned_data["pdf_attachment"],
+                scheduled_send_time=scheduled_send_time,
+                automatically_send_when_due=automatically_send_when_due,
+                status=campaign_status,
+                ai_status=Campaign.AI_PENDING,
+            )
+
+            generate_campaign_ai_draft_task.delay(campaign.id)
+
+            return redirect("campaign_preview", campaign_id=campaign.id)
+
+    else:
+        form = AICampaignCreateForm()
+
+    return render(
+        request,
+        "core/ai_campaign_create.html",
+        {
+            "form": form,
+        },
+    )

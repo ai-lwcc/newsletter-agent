@@ -1,0 +1,83 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create AI Campaign</title>
+    <link rel="stylesheet" href="{% static 'core/styles.css' %}">
+</head>
+<body>
+
+<div class="container">
+
+    <p>
+        <a href="{% url 'dashboard' %}">← Back to Dashboard</a>
+    </p>
+
+    <div class="card">
+        <h1>Create AI Campaign</h1>
+
+        <p>
+            Upload a PDF and the AI will create a campaign draft, including
+            the email subject, email body, WhatsApp message, and suggested groups.
+        </p>
+
+        <div class="preview-box">
+            The AI will not send emails. You will still review the campaign,
+            accept groups, run a dry run, and confirm sending manually.
+        </div>
+    </div>
+
+   <div class="card">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <h2 class="section-title">Campaign Setup</h2>
+
+        <p>
+            <label for="{{ form.title.id_for_label }}">
+                Campaign Title
+            </label><br>
+            {{ form.title }}
+        </p>
+
+        <p>
+            <label for="{{ form.pdf_attachment.id_for_label }}">
+                PDF Attachment
+            </label><br>
+            {{ form.pdf_attachment }}
+        </p>
+
+        <h2 class="section-title">Scheduling</h2>
+
+        <p>
+            <label for="{{ form.scheduled_send_time.id_for_label }}">
+                Scheduled Send Time
+            </label><br>
+            {{ form.scheduled_send_time }}
+        </p>
+
+        <p>
+            <label for="{{ form.automatically_send_when_due.id_for_label }}">
+                {{ form.automatically_send_when_due }}
+                Automatically send when due
+            </label>
+        </p>
+
+        <div class="preview-box">
+            Even if automatic sending is enabled, the campaign will not send until you review it,
+            accept groups, and create dry-run delivery logs.
+        </div>
+
+        <div class="actions">
+            <button class="button safe" type="submit">
+                Generate Campaign from PDF
+            </button>
+        </div>
+    </form>
+</div>
+
+</div>
+
+</body>
+</html>

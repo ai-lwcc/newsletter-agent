@@ -5,6 +5,10 @@
 <head>
     <title>{{ campaign.title }} Preview</title>
     <link rel="stylesheet" href="{% static 'core/styles.css' %}">
+
+    {% if campaign.ai_status == "pending" or campaign.ai_status == "processing" %}
+        <meta http-equiv="refresh" content="5">
+    {% endif %}
 </head>
 <body>
 
@@ -31,9 +35,20 @@
         </p>
 
         <div class="actions">
-            <a class="button safe" href="{% url 'campaign_generate_ai_draft' campaign.id %}">
-                Generate AI Draft
-            </a>
+
+            {% if campaign.ai_status == "pending" or campaign.ai_status == "processing" %}
+                <span class="button secondary">
+                    AI Generating...
+                </span>
+            {% elif campaign.ai_status == "completed" %}
+                <a class="button safe" href="{% url 'campaign_generate_ai_draft' campaign.id %}">
+                    Regenerate AI Draft
+                </a>
+            {% else %}
+                <a class="button safe" href="{% url 'campaign_generate_ai_draft' campaign.id %}">
+                    Generate AI Draft
+                </a>
+            {% endif %}
 
             <a class="button secondary" href="{% url 'send_campaign_test_email' campaign.id %}">
                 Send Test Email
@@ -54,19 +69,59 @@
             <a class="button secondary" href="{% url 'campaign_schedule_status' campaign.id %}">
                 Schedule Status
             </a>
+
         </div>
+    </div>
+
+    <div class="card">
+        <h2 class="section-title">AI Status</h2>
+
+        <p>
+            <strong>Status:</strong>
+            {{ campaign.ai_status }}
+        </p>
+
+        {% if campaign.ai_status == "pending" %}
+            <div class="preview-box">
+                AI draft request queued. This page will refresh automatically.
+            </div>
+        {% elif campaign.ai_status == "processing" %}
+            <div class="preview-box">
+                AI is currently generating the campaign draft. This page will refresh automatically.
+            </div>
+        {% elif campaign.ai_status == "completed" %}
+            <div class="preview-box">
+                AI draft generation completed successfully.
+            </div>
+        {% elif campaign.ai_status == "failed" %}
+            <div class="preview-box">
+                AI draft generation failed. Check Celery worker logs.
+            </div>
+        {% else %}
+            <div class="preview-box">
+                No AI draft has been generated yet.
+            </div>
+        {% endif %}
     </div>
 
     <div class="card">
         <h2 class="section-title">AI Draft Summary</h2>
 
         {% if campaign.ai_summary %}
+
             <div class="preview-box">
                 {{ campaign.ai_summary|linebreaks }}
             </div>
 
-            <p><strong>AI Review Required:</strong> {{ campaign.ai_review_required }}</p>
-            <p><strong>AI Generated At:</strong> {{ campaign.ai_generated_at }}</p>
+            <p>
+                <strong>AI Review Required:</strong>
+                {{ campaign.ai_review_required }}
+            </p>
+
+            <p>
+                <strong>AI Generated At:</strong>
+                {{ campaign.ai_generated_at }}
+            </p>
 
             <h3>AI Suggested Groups</h3>
 
@@ -77,7 +132,28 @@
                     <li>No AI suggested groups.</li>
                 {% endfor %}
             </ul>
+
+            {% if campaign.ai_suggested_groups %}
+                <div class="actions">
+
+                    {% if campaign.ai_review_required %}
+                        <a
+                            class="button safe"
+                            href="{% url 'campaign_accept_ai_groups' campaign.id %}"
+                        >
+                            Accept AI Suggested Groups
+                        </a>
+                    {% else %}
+                        <span class="badge">
+                            AI Groups Accepted
+                        </span>
+                    {% endif %}
+
+                </div>
+            {% endif %}
+
         {% else %}
+
             <p>No AI draft generated yet.</p>
 
             {% if not campaign.pdf_attachment %}
@@ -85,13 +161,17 @@
                     Upload a PDF attachment before generating an AI draft.
                 </div>
             {% endif %}
+
         {% endif %}
     </div>
 
     <div class="card">
         <h2 class="section-title">Email Preview</h2>
 
-        <p><strong>Subject:</strong> {{ campaign.email_subject }}</p>
+        <p>
+            <strong>Subject:</strong>
+            {{ campaign.email_subject }}
+        </p>
 
         <div class="preview-box">
             {% if campaign.email_body %}
@@ -132,6 +212,7 @@
         {% if campaign.pdf_attachment %}
             <div class="pdf-card">
                 <p><strong>Attached file:</strong></p>
+
                 <a href="{{ campaign.pdf_attachment.url }}">
                     Download PDF
                 </a>

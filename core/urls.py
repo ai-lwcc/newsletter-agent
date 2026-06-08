@@ -12,6 +12,8 @@ from .views import (
     campaign_schedule_status,
     dashboard,
     campaign_generate_ai_draft,
+    campaign_accept_ai_groups,
+    ai_campaign_create,
 )
 
 urlpatterns = [
@@ -67,5 +69,15 @@ urlpatterns = [
         "campaigns/<int:campaign_id>/generate-ai-draft/",
         campaign_generate_ai_draft,
         name="campaign_generate_ai_draft",
+    ),
+    path(
+        "campaigns/<int:campaign_id>/accept-ai-groups/",
+        campaign_accept_ai_groups,
+        name="campaign_accept_ai_groups",
+    ),
+    path(
+        "campaigns/ai-create/",
+        ai_campaign_create,
+        name="ai_campaign_create",
     ),
 ]
