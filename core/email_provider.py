@@ -1,19 +1,39 @@
+from email.mime.image import MIMEImage
+
 from django.conf import settings
-from django.core.mail import EmailMessage
-
-
-class EmailProviderError(Exception):
-    pass
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 
 
 class SMTPEmailProvider:
     def send_campaign_email(self, campaign, person):
-        email = EmailMessage(
+        text_body = campaign.email_body or ""
+
+        html_body = render_to_string(
+            "core/emails/campaign_email.html",
+            {
+                "campaign": campaign,
+                "person": person,
+                "cover_cid": "pdf_cover_image",
+            },
+        )
+
+        email = EmailMultiAlternatives(
             subject=campaign.email_subject,
-            body=campaign.email_body,
+            body=text_body,
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=[person.email],
         )
+
+        email.attach_alternative(html_body, "text/html")
+
+        if campaign.pdf_cover_image:
+            campaign.pdf_cover_image.open("rb")
+            image = MIMEImage(campaign.pdf_cover_image.read())
+            image.add_header("Content-ID", "<pdf_cover_image>")
+            image.add_header("Content-Disposition", "inline", filename="pdf-cover.png")
+            email.attach(image)
+            campaign.pdf_cover_image.close()
 
         if campaign.pdf_attachment:
             campaign.pdf_attachment.open("rb")
@@ -28,9 +48,4 @@ class SMTPEmailProvider:
 
 
 def get_email_provider():
-    provider_name = getattr(settings, "EMAIL_PROVIDER", "smtp")
-
-    if provider_name == "smtp":
-        return SMTPEmailProvider()
-
-    raise EmailProviderError(f"Unknown email provider: {provider_name}")
+    return SMTPEmailProvider()

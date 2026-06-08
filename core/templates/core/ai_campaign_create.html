@@ -28,54 +28,92 @@
         </div>
     </div>
 
-   <div class="card">
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
+    <div class="card">
 
-        <h2 class="section-title">Campaign Setup</h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
 
-        <p>
-            <label for="{{ form.title.id_for_label }}">
-                Campaign Title
-            </label><br>
-            {{ form.title }}
-        </p>
+            {% if form.errors %}
+                <div class="preview-box">
+                    <strong>Please fix the errors below:</strong>
+                    {{ form.errors }}
+                </div>
+            {% endif %}
 
-        <p>
-            <label for="{{ form.pdf_attachment.id_for_label }}">
-                PDF Attachment
-            </label><br>
-            {{ form.pdf_attachment }}
-        </p>
+            <h2 class="section-title">Campaign Setup</h2>
 
-        <h2 class="section-title">Scheduling</h2>
+            <p>
+                <label for="{{ form.title.id_for_label }}">
+                    Campaign Title
+                </label><br>
+                {{ form.title }}
+            </p>
 
-        <p>
-            <label for="{{ form.scheduled_send_time.id_for_label }}">
-                Scheduled Send Time
-            </label><br>
-            {{ form.scheduled_send_time }}
-        </p>
+            <p>
+                <label for="{{ form.pdf_attachment.id_for_label }}">
+                    PDF Attachment
+                </label><br>
+                {{ form.pdf_attachment }}
+            </p>
 
-        <p>
-            <label for="{{ form.automatically_send_when_due.id_for_label }}">
-                {{ form.automatically_send_when_due }}
-                Automatically send when due
-            </label>
-        </p>
+            <p>
+                <label for="{{ form.heyzine_url.id_for_label }}">
+                    Heyzine Flipbook URL
+                </label><br>
+                {{ form.heyzine_url }}
+            </p>
 
-        <div class="preview-box">
-            Even if automatic sending is enabled, the campaign will not send until you review it,
-            accept groups, and create dry-run delivery logs.
-        </div>
+            <div class="preview-box">
+                Optional. If provided, the email can display a clickable preview image
+                that opens the Heyzine flipbook.
+            </div>
 
-        <div class="actions">
-            <button class="button safe" type="submit">
-                Generate Campaign from PDF
-            </button>
-        </div>
-    </form>
-</div>
+            <h2 class="section-title">AI Writing Settings</h2>
+
+            <p>
+                <label for="{{ form.email_length.id_for_label }}">
+                    Email Length
+                </label><br>
+                {{ form.email_length }}
+            </p>
+
+            <p>
+                <label for="{{ form.tone.id_for_label }}">
+                    Tone
+                </label><br>
+                {{ form.tone }}
+            </p>
+
+            <h2 class="section-title">Scheduling</h2>
+
+            <p>
+                <label for="{{ form.scheduled_send_time.id_for_label }}">
+                    Scheduled Send Time
+                </label><br>
+                {{ form.scheduled_send_time }}
+            </p>
+
+            <p>
+                <label for="{{ form.automatically_send_when_due.id_for_label }}">
+                    {{ form.automatically_send_when_due }}
+                    Automatically send when due
+                </label>
+            </p>
+
+            <div class="preview-box">
+                Even if automatic sending is enabled, the campaign will not send
+                until you review it, accept groups, and create dry-run delivery logs.
+            </div>
+
+            <div class="actions">
+                <button class="button safe" type="submit">
+                    Generate Campaign from PDF
+                </button>
+            </div>
+
+        </form>
+
+    </div>
 
 </div>
 

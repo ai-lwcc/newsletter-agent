@@ -138,6 +138,14 @@ class Campaign(models.Model):
         max_length=20,
         default="professional",
     )
+
+    heyzine_url = models.URLField(blank=True)
+
+    pdf_cover_image = models.ImageField(
+        upload_to="campaign_covers/",
+        blank=True,
+        null=True,
+    )
     
 class DeliveryLog(models.Model):
     CHANNEL_EMAIL = "email"

@@ -56,3 +56,8 @@ class AICampaignCreateForm(forms.Form):
             "time arrives, but only after dry-run logs exist."
         ),
     )
+    
+    heyzine_url = forms.URLField(
+        required=False,
+        help_text="Optional Heyzine flipbook link.",
+    )

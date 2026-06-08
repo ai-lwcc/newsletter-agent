@@ -19,6 +19,8 @@ from .ai_service import generate_campaign_ai_draft
 from .models import Group
 from .forms import AICampaignCreateForm
 from core.tasks import generate_campaign_ai_draft_task
+from core.pdf_cover_service import generate_pdf_cover_image
+from core.email_provider import get_email_provider
 
 
 def health_check(request):
@@ -259,8 +261,10 @@ def ai_campaign_create(request):
                 ai_status=Campaign.AI_PENDING,
                 email_length=form.cleaned_data["email_length"],
                 tone=form.cleaned_data["tone"],
+                heyzine_url=form.cleaned_data.get("heyzine_url", ""),
+                
             )
-
+            generate_pdf_cover_image(campaign)
             generate_campaign_ai_draft_task.delay(campaign.id)
 
             return redirect("campaign_preview", campaign_id=campaign.id)

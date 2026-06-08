@@ -1,18 +1,23 @@
 from django.conf import settings
-from django.core.mail import send_mail
+
+from core.email_provider import get_email_provider
+
+
+class TestPerson:
+    def __init__(self, email):
+        self.email = email
+        self.full_name = "Test Recipient"
 
 
 def send_campaign_test_email(campaign):
     if not settings.TEST_RECIPIENT_EMAIL:
-        raise ValueError("TEST_RECIPIENT_EMAIL is not configured.")
+        raise ValueError(
+            "TEST_RECIPIENT_EMAIL is not configured."
+        )
 
-    subject = campaign.email_subject
-    message = campaign.email_body
+    provider = get_email_provider()
 
-    send_mail(
-        subject=subject,
-        message=message,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[settings.TEST_RECIPIENT_EMAIL],
-        fail_silently=False,
+    provider.send_campaign_email(
+        campaign,
+        TestPerson(settings.TEST_RECIPIENT_EMAIL),
     )
