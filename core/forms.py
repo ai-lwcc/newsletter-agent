@@ -24,7 +24,12 @@ class AICampaignCreateForm(forms.Form):
 
     pdf_attachment = forms.FileField(
         required=True,
-        help_text="Upload the PDF that the AI should use to create the campaign.",
+        widget=forms.ClearableFileInput(
+            attrs={
+                "accept": ".pdf,.png,.jpg,.jpeg,.webp",
+            }
+        ),
+        help_text="Upload a PDF, PNG, JPG, JPEG, or WEBP file.",
     )
 
     email_length = forms.ChoiceField(

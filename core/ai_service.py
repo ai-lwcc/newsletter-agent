@@ -4,8 +4,8 @@ import re
 
 import ollama
 
+from core.document_text_service import extract_text_from_campaign_file
 from core.models import Group
-from core.pdf_service import extract_text_from_pdf
 
 
 AI_MODEL = os.getenv(
@@ -33,7 +33,9 @@ def extract_json_from_text(text):
     match = re.search(r"\{.*\}", text, re.DOTALL)
 
     if not match:
-        raise ValueError(f"AI did not return JSON. Response was: {text[:500]}")
+        raise ValueError(
+            f"AI did not return JSON. Response was: {text[:500]}"
+        )
 
     return json.loads(match.group(0))
 
@@ -43,20 +45,20 @@ def get_email_length_rules(email_length):
         return (
             "Write a medium-length email. "
             "Use 3 to 5 short paragraphs. "
-            "Include 2 to 4 key highlights from the PDF."
+            "Include 2 to 4 key highlights from the attached file."
         )
 
     if email_length == "long":
         return (
             "Write a longer newsletter-style email. "
             "Use 5 to 7 short paragraphs. "
-            "Include several key highlights, but still do not replace the PDF."
+            "Include several key highlights, but still do not replace the attached file."
         )
 
     return (
         "Write a short accompanying email. "
         "Use 2 to 4 short paragraphs only. "
-        "Include only 1 to 3 key highlights from the PDF."
+        "Include only 1 to 3 key highlights from the attached file."
     )
 
 
@@ -85,21 +87,38 @@ def get_tone_rules(tone):
     )
 
 
+def get_file_description(campaign):
+    if not campaign.pdf_attachment:
+        return "attached file"
+
+    filename = campaign.pdf_attachment.name.lower()
+
+    if filename.endswith(".pdf"):
+        return "attached PDF"
+
+    if filename.endswith((".png", ".jpg", ".jpeg", ".webp")):
+        return "attached image, flyer, or poster"
+
+    return "attached file"
+
+
 def generate_campaign_ai_draft(campaign):
     if not campaign.pdf_attachment:
         raise ValueError(
-            "Campaign must have a PDF attachment before generating AI draft."
+            "Campaign must have an attachment before generating AI draft."
         )
 
-    pdf_text = extract_text_from_pdf(campaign.pdf_attachment.path)
+    document_text = extract_text_from_campaign_file(
+        campaign.pdf_attachment.path
+    )
 
-    print("\n========== PDF LENGTH ==========")
-    print(len(pdf_text))
-    print("================================\n")
+    print("\n========== DOCUMENT LENGTH ==========")
+    print(len(document_text))
+    print("=====================================\n")
 
-    print("\n========== PDF PREVIEW ==========")
-    print(pdf_text[:1000])
-    print("=================================\n")
+    print("\n========== DOCUMENT PREVIEW ==========")
+    print(document_text[:1000])
+    print("======================================\n")
 
     available_groups = list(
         Group.objects.values_list("name", flat=True)
@@ -107,6 +126,7 @@ def generate_campaign_ai_draft(campaign):
 
     email_length = getattr(campaign, "email_length", "short")
     tone = getattr(campaign, "tone", "professional")
+    file_description = get_file_description(campaign)
 
     email_length_rules = get_email_length_rules(email_length)
     tone_rules = get_tone_rules(tone)
@@ -114,11 +134,22 @@ def generate_campaign_ai_draft(campaign):
     prompt = f"""
 You are an experienced nonprofit communications assistant.
 
-Your job is NOT to summarize the entire PDF in detail.
+Your job is NOT to summarize the entire attached file in detail.
 
-Your job is to write an email message that will be sent together with the attached PDF.
+Your job is to write an email message that will be sent together with the {file_description}.
 
-The PDF itself will be attached to the email, so the email body should introduce the attachment and encourage the reader to open it.
+The attached file itself will be included in the email, so the email body should introduce the attachment and encourage the reader to open it.
+
+The attached file may be:
+- a PDF report
+- a poster
+- a flyer
+- a PNG image
+- a JPG/JPEG image
+- a WEBP image
+- an event announcement
+- a community update
+- a program brochure
 
 Return ONLY valid JSON.
 
@@ -161,12 +192,15 @@ WRITING RULES:
 1. email_subject:
    - Short and professional.
    - Maximum 12 words.
+   - Match the attached file's purpose, such as annual report, event poster, flyer, program update, or announcement.
 
 2. email_body:
-   - This email is only an accompanying message for the attached PDF.
-   - Do not restate the whole PDF.
-   - Mention that the full PDF is attached.
-   - Include only 1 to 3 key highlights from the PDF.
+   - This email is only an accompanying message for the attached file.
+   - Do not restate the whole attached file.
+   - Mention that the full file is attached.
+   - Include only 1 to 3 key highlights from the attached file.
+   - If the file is an event poster or flyer, include the event name, date, time, location, and call to action when available.
+   - If the file is a report, include a short overview and invite readers to review the attachment.
    - End with: Living Water Counselling Centre
 
 3. Length rules:
@@ -182,15 +216,18 @@ WRITING RULES:
 
 5. whatsapp_message:
    - Maximum 500 characters.
-   - Short message telling people the PDF/report/newsletter is attached or available by email.
+   - Short message telling people the attached file/report/newsletter/poster/flyer is available by email.
+   - If it is an event, include the most important event detail if available.
 
 6. summary:
    - Internal summary only.
    - Maximum 3 sentences.
+   - Describe what the attached file is about.
 
 7. suggested_groups:
    - Choose only from AVAILABLE GROUPS.
    - Never invent group names.
+   - Choose groups based on the attached file's audience and purpose.
 
 8. email_body_zh:
    - Write a professional Traditional Chinese version of the email.
@@ -210,9 +247,8 @@ If generating Chinese text, output fluent Traditional Chinese suitable for Hong 
 Never output Simplified Chinese.
 Never output garbled, corrupted, or nonsensical Chinese text.
 
-
-PDF CONTENT:
-{pdf_text[:6000]}
+DOCUMENT CONTENT:
+{document_text[:6000]}
 """
 
     response = ollama.chat(
@@ -224,7 +260,8 @@ PDF CONTENT:
                     "You are a JSON API. "
                     "You must always return one valid JSON object only. "
                     "Do not return markdown. "
-                    "Do not return explanation text."
+                    "Do not return explanation text. "
+                    "All JSON string fields must contain useful content."
                 ),
             },
             {
@@ -240,7 +277,9 @@ PDF CONTENT:
     )
 
     content = response["message"]["content"]
+
     print("========== RAW AI RESPONSE ==========")
     print(content)
     print("=====================================")
+
     return extract_json_from_text(content)
