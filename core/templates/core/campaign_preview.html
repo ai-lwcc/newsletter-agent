@@ -179,9 +179,9 @@
 
             <p>No AI draft generated yet.</p>
 
-            {% if not campaign.pdf_attachment %}
+            {% if not campaign.primary_attachment %}
                 <div class="preview-box">
-                    Upload a PDF attachment before generating an AI draft.
+                    Upload an attachment before generating an AI draft.
                 </div>
             {% endif %}
 
@@ -242,18 +242,18 @@
     </div>
 
     <div class="card">
-        <h2 class="section-title">PDF Attachment</h2>
+        <h2 class="section-title">Primary Attachment</h2>
 
-        {% if campaign.pdf_attachment %}
+        {% if campaign.primary_attachment %}
             <div class="pdf-card">
                 <p><strong>Attached file:</strong></p>
 
-                <a href="{{ campaign.pdf_attachment.url }}">
-                    Download PDF
+                <a href="{{ campaign.primary_attachment.url }}">
+                    Download Attached File
                 </a>
             </div>
         {% else %}
-            <p>No PDF attached.</p>
+            <p>No attachment uploaded.</p>
         {% endif %}
     </div>
 

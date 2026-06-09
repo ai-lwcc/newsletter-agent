@@ -68,7 +68,7 @@ class Campaign(models.Model):
     email_body = models.TextField(blank=True)
     whatsapp_message = models.TextField(blank=True)
 
-    pdf_attachment = models.FileField(
+    primary_attachment = models.FileField(
     upload_to="campaign_pdfs/",
     blank=True,
     null=True,
@@ -141,7 +141,7 @@ class Campaign(models.Model):
 
     cover_link_url = models.URLField(blank=True)
 
-    pdf_cover_image = models.ImageField(
+    cover_image = models.ImageField(
         upload_to="campaign_covers/",
         blank=True,
         null=True,
@@ -161,7 +161,7 @@ class CampaignAttachment(models.Model):
     )
 
     cover_image = models.ImageField(
-        upload_to="campaign_attachment_covers/",
+        upload_to="campaign_covers/",
         blank=True,
         null=True,
     )

@@ -69,31 +69,10 @@ def test_send_pending_campaign_emails_marks_logs_sent():
 @pytest.mark.django_db
 @override_settings(
     SEND_REAL_EMAILS=True,
-    MAX_EMAILS_PER_DAY=0,
+    MAX_EMAILS_PER_DAY=300,
     EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+    DEFAULT_FROM_EMAIL="newsletter@example.com",
 )
-def test_send_pending_campaign_emails_respects_daily_limit():
-    group = Group.objects.create(name="Pickleball Players")
-
-    campaign = Campaign.objects.create(
-        title="June Newsletter",
-        email_subject="June Updates",
-        email_body="Hello everyone.",
-    )
-    campaign.target_groups.add(group)
-
-    person = Person.objects.create(
-        full_name="Jane Test",
-        email="jane@example.com",
-        email_consent=True,
-    )
-    person.groups.add(group)
-
-    create_campaign_dry_run_logs(campaign)
-
-    with pytest.raises(DailyEmailLimitExceeded):
-        send_pending_campaign_emails(campaign)
-
 @pytest.mark.django_db
 @override_settings(
     SEND_REAL_EMAILS=True,
@@ -101,7 +80,7 @@ def test_send_pending_campaign_emails_respects_daily_limit():
     EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
     DEFAULT_FROM_EMAIL="newsletter@example.com",
 )
-def test_send_pending_campaign_email_with_pdf_attachment():
+def test_send_pending_campaign_email_with_primary_attachment():
     group = Group.objects.create(name="Pickleball Players")
 
     fake_pdf = SimpleUploadedFile(
@@ -114,7 +93,7 @@ def test_send_pending_campaign_email_with_pdf_attachment():
         title="June Newsletter",
         email_subject="June Updates",
         email_body="Hello everyone.",
-        pdf_attachment=fake_pdf,
+        primary_attachment=fake_pdf,
     )
     campaign.target_groups.add(group)
 

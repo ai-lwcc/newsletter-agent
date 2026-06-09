@@ -36,7 +36,7 @@ class CampaignAdmin(admin.ModelAdmin):
         "automatically_send_when_due",
         "scheduled_send_time",
         "dry_run_completed_at",
-        "pdf_attachment",
+        "primary_attachment",
         "created_at",
         "updated_at",
     )
@@ -71,7 +71,7 @@ class CampaignAdmin(admin.ModelAdmin):
                     "email_subject",
                     "email_body",
                     "whatsapp_message",
-                    "pdf_attachment",
+                    "primary_attachment",
                     "target_groups",
                 )
             },

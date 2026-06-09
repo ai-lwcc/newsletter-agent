@@ -5,7 +5,7 @@ from core.models import Campaign
 
 
 @pytest.mark.django_db
-def test_campaign_can_have_pdf_attachment():
+def test_campaign_can_have_primary_attachment():
     fake_pdf = SimpleUploadedFile(
         "newsletter.pdf",
         b"%PDF-1.4 fake pdf content",
@@ -15,8 +15,13 @@ def test_campaign_can_have_pdf_attachment():
     campaign = Campaign.objects.create(
         title="June Newsletter",
         email_subject="June Updates",
-        pdf_attachment=fake_pdf,
+        primary_attachment=fake_pdf,
     )
 
-    assert campaign.pdf_attachment.name.startswith("campaign_pdfs/")
-    assert campaign.pdf_attachment.name.endswith(".pdf")
+    assert campaign.primary_attachment.name.startswith(
+        "campaign_pdfs/"
+    )
+
+    assert campaign.primary_attachment.name.endswith(
+        ".pdf"
+    )

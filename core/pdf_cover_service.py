@@ -44,7 +44,7 @@ def generate_cover_image_from_file(file_path):
     return None
 
 
-def generate_pdf_cover_image(campaign):
+def generate_attachment_cover_image(campaign):
     try:
         first_attachment = campaign.attachments.first()
 
@@ -52,9 +52,9 @@ def generate_pdf_cover_image(campaign):
             image_bytes = generate_cover_image_from_file(
                 first_attachment.file.path
             )
-        elif campaign.pdf_attachment:
+        elif campaign.primary_attachment:
             image_bytes = generate_cover_image_from_file(
-                campaign.pdf_attachment.path
+                campaign.primary_attachment.path
             )
         else:
             return
@@ -64,7 +64,7 @@ def generate_pdf_cover_image(campaign):
 
         filename = f"campaign_{campaign.id}_cover.png"
 
-        campaign.pdf_cover_image.save(
+        campaign.cover_image.save(
             filename,
             ContentFile(image_bytes),
             save=True,

@@ -1,4 +1,5 @@
 from email.mime.image import MIMEImage
+from mimetypes import guess_type
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
@@ -14,7 +15,7 @@ class SMTPEmailProvider:
             {
                 "campaign": campaign,
                 "person": person,
-                "cover_cid": "pdf_cover_image",
+                "cover_cid": "cover_image",
             },
         )
 
@@ -27,22 +28,31 @@ class SMTPEmailProvider:
 
         email.attach_alternative(html_body, "text/html")
 
-        if campaign.pdf_cover_image:
-            campaign.pdf_cover_image.open("rb")
-            image = MIMEImage(campaign.pdf_cover_image.read())
-            image.add_header("Content-ID", "<pdf_cover_image>")
-            image.add_header("Content-Disposition", "inline", filename="pdf-cover.png")
-            email.attach(image)
-            campaign.pdf_cover_image.close()
-
-        if campaign.pdf_attachment:
-            campaign.pdf_attachment.open("rb")
-            email.attach(
-                campaign.pdf_attachment.name.split("/")[-1],
-                campaign.pdf_attachment.read(),
-                "application/pdf",
+        if campaign.cover_image:
+            campaign.cover_image.open("rb")
+            image = MIMEImage(campaign.cover_image.read())
+            image.add_header("Content-ID", "<cover_image>")
+            image.add_header(
+                "Content-Disposition",
+                "inline",
+                filename="cover-image.png",
             )
-            campaign.pdf_attachment.close()
+            email.attach(image)
+            campaign.cover_image.close()
+
+        if campaign.primary_attachment:
+            campaign.primary_attachment.open("rb")
+
+            filename = campaign.primary_attachment.name.split("/")[-1]
+            content_type, _ = guess_type(filename)
+
+            email.attach(
+                filename,
+                campaign.primary_attachment.read(),
+                content_type or "application/octet-stream",
+            )
+
+            campaign.primary_attachment.close()
 
         email.send(fail_silently=False)
 

@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from core.pdf_cover_service import generate_pdf_cover_image
+from core.pdf_cover_service import generate_attachment_cover_image
 from core.tasks import generate_campaign_ai_draft_task
 
 from .campaign_send_service import (
@@ -282,7 +282,7 @@ def ai_campaign_create(request):
                 email_body="",
                 email_body_zh="",
                 whatsapp_message="",
-                pdf_attachment=first_file,
+                primary_attachment=first_file,
                 scheduled_send_time=scheduled_send_time,
                 automatically_send_when_due=automatically_send_when_due,
                 status=campaign_status,
@@ -298,7 +298,7 @@ def ai_campaign_create(request):
                     file=uploaded_file,
                 )
 
-            generate_pdf_cover_image(campaign)
+            generate_attachment_cover_image(campaign)
             generate_campaign_ai_draft_task.delay(campaign.id)
 
             return redirect(

@@ -88,10 +88,10 @@ def get_tone_rules(tone):
 
 
 def get_file_description(campaign):
-    if not campaign.pdf_attachment:
+    if not campaign.primary_attachment:
         return "attached file"
 
-    filename = campaign.pdf_attachment.name.lower()
+    filename = campaign.primary_attachment.name.lower()
 
     if filename.endswith(".pdf"):
         return "attached PDF"
@@ -103,7 +103,7 @@ def get_file_description(campaign):
 
 
 def generate_campaign_ai_draft(campaign):
-    if not campaign.pdf_attachment:
+    if not campaign.primary_attachment:
         raise ValueError(
             "Campaign must have an attachment before generating AI draft."
         )
@@ -123,11 +123,11 @@ def generate_campaign_ai_draft(campaign):
             )
     else:
         text = extract_text_from_campaign_file(
-            campaign.pdf_attachment.path
+            campaign.primary_attachment.path
         )
 
         document_text_parts.append(
-            f"FILE: {campaign.pdf_attachment.name}\n{text}"
+            f"FILE: {campaign.primary_attachment.name}\n{text}"
         )
 
     document_text = "\n\n---\n\n".join(document_text_parts)
