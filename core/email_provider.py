@@ -40,7 +40,22 @@ class SMTPEmailProvider:
             email.attach(image)
             campaign.cover_image.close()
 
-        if campaign.primary_attachment:
+        if campaign.attachments.exists():
+            for attachment in campaign.attachments.all():
+                attachment.file.open("rb")
+
+                filename = attachment.file.name.split("/")[-1]
+                content_type, _ = guess_type(filename)
+
+                email.attach(
+                    filename,
+                    attachment.file.read(),
+                    content_type or "application/octet-stream",
+                )
+
+                attachment.file.close()
+
+        elif campaign.primary_attachment:
             campaign.primary_attachment.open("rb")
 
             filename = campaign.primary_attachment.name.split("/")[-1]
