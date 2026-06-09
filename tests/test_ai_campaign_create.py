@@ -36,7 +36,7 @@ def test_ai_campaign_create_creates_campaign(client, monkeypatch):
         reverse("ai_campaign_create"),
         {
             "title": "AI Annual Report Campaign",
-            "pdf_attachment": fake_pdf,
+            "attachments": fake_pdf,
             "email_length": "short",
             "tone": "professional",
         },
@@ -77,7 +77,7 @@ def test_ai_campaign_create_can_set_scheduling(client, monkeypatch):
         reverse("ai_campaign_create"),
         {
             "title": "Scheduled AI Campaign",
-            "pdf_attachment": fake_pdf,
+            "attachments": fake_pdf,
             "scheduled_send_time": "2026-06-15T10:00",
             "automatically_send_when_due": "on",
             "email_length": "medium",

@@ -14,7 +14,7 @@ from .campaign_send_service import (
 from .dry_run_service import create_campaign_dry_run_logs
 from .email_service import send_campaign_test_email
 from .forms import AICampaignCreateForm
-from .models import Campaign, DeliveryLog, Group
+from .models import Campaign, CampaignAttachment, DeliveryLog, Group
 from .recipient_service import get_campaign_recipients
 from .retry_service import retry_failed_campaign_emails
 from .schedule_status_service import get_campaign_schedule_status
@@ -242,6 +242,22 @@ def ai_campaign_create(request):
         form = AICampaignCreateForm(request.POST, request.FILES)
 
         if form.is_valid():
+            uploaded_files = request.FILES.getlist("attachments")
+
+            if not uploaded_files:
+                messages.error(
+                    request,
+                    "Please upload at least one campaign file.",
+                )
+
+                return render(
+                    request,
+                    "core/ai_campaign_create.html",
+                    {
+                        "form": form,
+                    },
+                )
+
             title = form.cleaned_data.get("title") or "AI Generated Campaign"
 
             scheduled_send_time = form.cleaned_data.get("scheduled_send_time")
@@ -255,13 +271,15 @@ def ai_campaign_create(request):
             if scheduled_send_time and automatically_send_when_due:
                 campaign_status = Campaign.STATUS_SCHEDULED
 
+            first_file = uploaded_files[0]
+
             campaign = Campaign.objects.create(
                 title=title,
                 email_subject="",
                 email_body="",
                 email_body_zh="",
                 whatsapp_message="",
-                pdf_attachment=form.cleaned_data["pdf_attachment"],
+                pdf_attachment=first_file,
                 scheduled_send_time=scheduled_send_time,
                 automatically_send_when_due=automatically_send_when_due,
                 status=campaign_status,
@@ -270,6 +288,12 @@ def ai_campaign_create(request):
                 tone=form.cleaned_data["tone"],
                 heyzine_url=form.cleaned_data.get("heyzine_url", ""),
             )
+
+            for uploaded_file in uploaded_files:
+                CampaignAttachment.objects.create(
+                    campaign=campaign,
+                    file=uploaded_file,
+                )
 
             generate_pdf_cover_image(campaign)
             generate_campaign_ai_draft_task.delay(campaign.id)

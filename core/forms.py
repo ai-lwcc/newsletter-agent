@@ -15,6 +15,23 @@ TONE_CHOICES = [
 ]
 
 
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+
+class MultipleFileField(forms.FileField):
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+
+        if isinstance(data, (list, tuple)):
+            return [
+                single_file_clean(file, initial)
+                for file in data
+            ]
+
+        return single_file_clean(data, initial)
+
+
 class AICampaignCreateForm(forms.Form):
     title = forms.CharField(
         max_length=255,
@@ -22,14 +39,17 @@ class AICampaignCreateForm(forms.Form):
         help_text="Optional. If blank, AI will create a campaign title.",
     )
 
-    pdf_attachment = forms.FileField(
+    attachments = MultipleFileField(
         required=True,
-        widget=forms.ClearableFileInput(
+        widget=MultipleFileInput(
             attrs={
                 "accept": ".pdf,.png,.jpg,.jpeg,.webp",
             }
         ),
-        help_text="Upload a PDF, PNG, JPG, JPEG, or WEBP file.",
+        help_text=(
+            "Upload one or more PDFs, posters, flyers, PNGs, JPGs, JPEGs, "
+            "or WEBP files."
+        ),
     )
 
     email_length = forms.ChoiceField(
@@ -61,7 +81,7 @@ class AICampaignCreateForm(forms.Form):
             "time arrives, but only after dry-run logs exist."
         ),
     )
-    
+
     heyzine_url = forms.URLField(
         required=False,
         help_text="Optional Heyzine flipbook link.",

@@ -49,11 +49,13 @@
                 {{ form.title }}
             </p>
 
-            <p>
-                <label for="{{ form.pdf_attachment.id_for_label }}">
-                    Campaign File
-                </label><br>
-                {{ form.pdf_attachment }}
+            <label for="{{ form.attachments.id_for_label }}">
+                Campaign Files
+            </label><br>
+            {{ form.attachments }}
+
+            <p class="help-text">
+                Upload one or more PDFs, posters, flyers, PNGs, JPGs, JPEGs, or WEBP files.
             </p>
 
             <p>
