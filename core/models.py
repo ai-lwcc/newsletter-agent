@@ -139,7 +139,7 @@ class Campaign(models.Model):
         default="professional",
     )
 
-    heyzine_url = models.URLField(blank=True)
+    cover_link_url = models.URLField(blank=True)
 
     pdf_cover_image = models.ImageField(
         upload_to="campaign_covers/",

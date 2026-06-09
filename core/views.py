@@ -286,7 +286,7 @@ def ai_campaign_create(request):
                 ai_status=Campaign.AI_PENDING,
                 email_length=form.cleaned_data["email_length"],
                 tone=form.cleaned_data["tone"],
-                heyzine_url=form.cleaned_data.get("heyzine_url", ""),
+                cover_link_url=form.cleaned_data.get("cover_link_url", ""),
             )
 
             for uploaded_file in uploaded_files:

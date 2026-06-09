@@ -2,9 +2,9 @@
 <html>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;">
 
-    {% if campaign.heyzine_url and campaign.pdf_cover_image %}
+    {% if campaign.cover_link_url and campaign.pdf_cover_image %}
         <p>
-            <a href="{{ campaign.heyzine_url }}">
+            <a href="{{ campaign.cover_link_url }}">
                 <img
                     src="cid:{{ cover_cid }}"
                     alt="{{ campaign.title }}"

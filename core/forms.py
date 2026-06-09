@@ -82,7 +82,7 @@ class AICampaignCreateForm(forms.Form):
         ),
     )
 
-    heyzine_url = forms.URLField(
+    cover_link_url = forms.URLField(
         required=False,
         help_text="Optional Heyzine flipbook link.",
     )
