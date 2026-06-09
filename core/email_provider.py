@@ -28,7 +28,7 @@ class SMTPEmailProvider:
 
         email.attach_alternative(html_body, "text/html")
 
-        if campaign.cover_image:
+        if campaign.cover_link_url and campaign.cover_image:
             campaign.cover_image.open("rb")
             image = MIMEImage(campaign.cover_image.read())
             image.add_header("Content-ID", "<cover_image>")
