@@ -43,6 +43,7 @@ class AICampaignCreateForm(forms.Form):
         required=True,
         widget=MultipleFileInput(
             attrs={
+                "multiple": True,
                 "accept": ".pdf,.png,.jpg,.jpeg,.webp",
             }
         ),
@@ -50,6 +51,11 @@ class AICampaignCreateForm(forms.Form):
             "Upload one or more PDFs, posters, flyers, PNGs, JPGs, JPEGs, "
             "or WEBP files."
         ),
+    )
+
+    cover_link_url = forms.URLField(
+        required=False,
+        help_text="Optional link to open when the cover image is clicked.",
     )
 
     email_length = forms.ChoiceField(
@@ -80,9 +86,4 @@ class AICampaignCreateForm(forms.Form):
             "If checked, Celery can send this campaign when the scheduled "
             "time arrives, but only after dry-run logs exist."
         ),
-    )
-
-    cover_link_url = forms.URLField(
-        required=False,
-        help_text="Optional Heyzine flipbook link.",
     )

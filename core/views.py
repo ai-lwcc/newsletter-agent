@@ -239,7 +239,10 @@ def campaign_accept_ai_groups(request, campaign_id):
 
 def ai_campaign_create(request):
     if request.method == "POST":
-        form = AICampaignCreateForm(request.POST, request.FILES)
+        form = AICampaignCreateForm(
+            request.POST,
+            request.FILES,
+        )
 
         if form.is_valid():
             uploaded_files = request.FILES.getlist("attachments")
@@ -298,7 +301,10 @@ def ai_campaign_create(request):
             generate_pdf_cover_image(campaign)
             generate_campaign_ai_draft_task.delay(campaign.id)
 
-            return redirect("campaign_preview", campaign_id=campaign.id)
+            return redirect(
+                "campaign_preview",
+                campaign_id=campaign.id,
+            )
 
     else:
         form = AICampaignCreateForm()

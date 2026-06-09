@@ -45,20 +45,20 @@ def get_email_length_rules(email_length):
         return (
             "Write a medium-length email. "
             "Use 3 to 5 short paragraphs. "
-            "Include 2 to 4 key highlights from the attached file."
+            "Include 2 to 4 key highlights from the attached file(s)."
         )
 
     if email_length == "long":
         return (
             "Write a longer newsletter-style email. "
             "Use 5 to 7 short paragraphs. "
-            "Include several key highlights, but still do not replace the attached file."
+            "Include several key highlights, but still do not replace the attached file(s)."
         )
 
     return (
         "Write a short accompanying email. "
         "Use 2 to 4 short paragraphs only. "
-        "Include only 1 to 3 key highlights from the attached file."
+        "Include only 1 to 3 key highlights from the attached file(s)."
     )
 
 
@@ -108,9 +108,29 @@ def generate_campaign_ai_draft(campaign):
             "Campaign must have an attachment before generating AI draft."
         )
 
-    document_text = extract_text_from_campaign_file(
-        campaign.pdf_attachment.path
-    )
+    document_text_parts = []
+
+    attachments = campaign.attachments.all()
+
+    if attachments.exists():
+        for attachment in attachments:
+            text = extract_text_from_campaign_file(
+                attachment.file.path
+            )
+
+            document_text_parts.append(
+                f"FILE: {attachment.file.name}\n{text}"
+            )
+    else:
+        text = extract_text_from_campaign_file(
+            campaign.pdf_attachment.path
+        )
+
+        document_text_parts.append(
+            f"FILE: {campaign.pdf_attachment.name}\n{text}"
+        )
+
+    document_text = "\n\n---\n\n".join(document_text_parts)
 
     print("\n========== DOCUMENT LENGTH ==========")
     print(len(document_text))
@@ -134,13 +154,13 @@ def generate_campaign_ai_draft(campaign):
     prompt = f"""
 You are an experienced nonprofit communications assistant.
 
-Your job is NOT to summarize the entire attached file in detail.
+Your job is NOT to summarize the entire attached file or files in detail.
 
-Your job is to write an email message that will be sent together with the {file_description}.
+Your job is to write an email message that will be sent together with the attached file or files.
 
-The attached file itself will be included in the email, so the email body should introduce the attachment and encourage the reader to open it.
+The attached file(s) will be included in the email, so the email body should introduce the attachment(s) and encourage the reader to open them.
 
-The attached file may be:
+The attached file(s) may be:
 - a PDF report
 - a poster
 - a flyer
@@ -195,10 +215,10 @@ WRITING RULES:
    - Match the attached file's purpose, such as annual report, event poster, flyer, program update, or announcement.
 
 2. email_body:
-   - This email is only an accompanying message for the attached file.
-   - Do not restate the whole attached file.
-   - Mention that the full file is attached.
-   - Include only 1 to 3 key highlights from the attached file.
+   - This email is only an accompanying message for the attached file(s).
+   - Do not restate the whole attached file(s).
+   - Mention that the full file(s) is attached.
+   - Include only 1 to 3 key highlights from the attached file(s).
    - If the file is an event poster or flyer, include the event name, date, time, location, and call to action when available.
    - If the file is a report, include a short overview and invite readers to review the attachment.
    - End with: Living Water Counselling Centre
@@ -222,7 +242,7 @@ WRITING RULES:
 6. summary:
    - Internal summary only.
    - Maximum 3 sentences.
-   - Describe what the attached file is about.
+   - Describe what the attached file(s) is about.
 
 7. suggested_groups:
    - Choose only from AVAILABLE GROUPS.
@@ -247,7 +267,7 @@ If generating Chinese text, output fluent Traditional Chinese suitable for Hong 
 Never output Simplified Chinese.
 Never output garbled, corrupted, or nonsensical Chinese text.
 
-DOCUMENT CONTENT:
+ATTACHED FILE CONTENT:
 {document_text[:6000]}
 """
 
