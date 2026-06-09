@@ -75,13 +75,10 @@
 
         <div class="actions">
 
-            <form method="post" action="{% url 'campaign_send_real_emails' campaign.id %}">
-                {% csrf_token %}
-                <button class="button safe" type="submit">
-                    Confirm Send Emails
-                </button>
-            </form>
-
+            <a class="button secondary" href="{% url 'campaign_preview' campaign.id %}">
+                Back to Preview
+            </a>
+            
             <form method="post" action="{% url 'campaign_retry_failed_emails' campaign.id %}">
                 {% csrf_token %}
                 <button class="button secondary" type="submit">
@@ -89,10 +86,12 @@
                 </button>
             </form>
 
-            <a class="button secondary" href="{% url 'campaign_preview' campaign.id %}">
-                Back to Preview
-            </a>
-
+            <form method="post" action="{% url 'campaign_send_real_emails' campaign.id %}">
+                {% csrf_token %}
+                <button class="button safe" type="submit">
+                    Confirm Send Emails
+                </button>
+            </form>
         </div>
     </div>
 

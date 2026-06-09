@@ -1,0 +1,49 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Email Sent</title>
+    <link rel="stylesheet" href="{% static 'core/styles.css' %}">
+</head>
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <h1>✅ Test Email Sent</h1>
+
+        <p>
+            A test email has been sent successfully.
+        </p>
+
+        <p>
+            <strong>Campaign:</strong>
+            {{ campaign.title }}
+        </p>
+
+        <div class="actions">
+
+            <a
+                class="button secondary"
+                href="{% url 'campaign_preview' campaign.id %}"
+            >
+                ← Back to Preview
+            </a>
+
+            <a
+                class="button"
+                href="{% url 'dashboard' %}"
+            >
+                Dashboard
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

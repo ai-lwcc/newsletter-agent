@@ -49,12 +49,20 @@ def campaign_preview(request, campaign_id):
 
 
 def send_campaign_test_email_view(request, campaign_id):
-    campaign = get_object_or_404(Campaign, id=campaign_id)
+    campaign = get_object_or_404(
+        Campaign,
+        id=campaign_id,
+    )
 
     send_campaign_test_email(campaign)
 
-    return HttpResponse("Test email sent.")
-
+    return render(
+        request,
+        "core/test_email_sent.html",
+        {
+            "campaign": campaign,
+        },
+    )
 
 def campaign_recipients(request, campaign_id):
     campaign = get_object_or_404(
