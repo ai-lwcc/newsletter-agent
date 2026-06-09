@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
 
-from .models import Campaign, DeliveryLog, Group, Person
+from .models import Campaign, DeliveryLog, Group, Person, CampaignAttachment
 
 
 @admin.register(Group)
@@ -126,3 +126,8 @@ class DeliveryLogAdmin(admin.ModelAdmin):
         "person__email",
         "error_message",
     )
+
+@admin.register(CampaignAttachment)
+class CampaignAttachmentAdmin(admin.ModelAdmin):
+    list_display = ("campaign", "file", "uploaded_at")
+    search_fields = ("campaign__title", "file")

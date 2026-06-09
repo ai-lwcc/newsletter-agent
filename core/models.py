@@ -149,6 +149,28 @@ class Campaign(models.Model):
 
     email_body_zh = models.TextField(blank=True)
     
+class CampaignAttachment(models.Model):
+    campaign = models.ForeignKey(
+        Campaign,
+        on_delete=models.CASCADE,
+        related_name="attachments",
+    )
+
+    file = models.FileField(
+        upload_to="campaign_attachments/",
+    )
+
+    cover_image = models.ImageField(
+        upload_to="campaign_attachment_covers/",
+        blank=True,
+        null=True,
+    )
+
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.file.name    
+
 class DeliveryLog(models.Model):
     CHANNEL_EMAIL = "email"
     CHANNEL_WHATSAPP = "whatsapp"
