@@ -1,3 +1,4 @@
+from io import BytesIO
 from pathlib import Path
 
 import fitz
@@ -13,38 +14,52 @@ SUPPORTED_IMAGE_EXTENSIONS = {
 }
 
 
-def generate_pdf_cover_image(campaign):
-    if not campaign.pdf_attachment:
-        return
-
-    file_path = campaign.pdf_attachment.path
+def generate_cover_image_from_file(file_path):
     extension = Path(file_path).suffix.lower()
 
-    try:
-        if extension == ".pdf":
-            document = fitz.open(file_path)
+    if extension == ".pdf":
+        document = fitz.open(file_path)
 
-            if document.page_count == 0:
-                document.close()
-                return
-
-            page = document[0]
-            pixmap = page.get_pixmap(matrix=fitz.Matrix(2, 2))
-            image_bytes = pixmap.tobytes("png")
-
+        if document.page_count == 0:
             document.close()
+            return None
 
-        elif extension in SUPPORTED_IMAGE_EXTENSIONS:
-            image = Image.open(file_path)
-            image.thumbnail((1200, 1200))
+        page = document[0]
+        pixmap = page.get_pixmap(matrix=fitz.Matrix(2, 2))
+        image_bytes = pixmap.tobytes("png")
 
-            from io import BytesIO
+        document.close()
 
-            buffer = BytesIO()
-            image.save(buffer, format="PNG")
-            image_bytes = buffer.getvalue()
+        return image_bytes
 
+    if extension in SUPPORTED_IMAGE_EXTENSIONS:
+        image = Image.open(file_path)
+        image.thumbnail((1200, 1200))
+
+        buffer = BytesIO()
+        image.save(buffer, format="PNG")
+
+        return buffer.getvalue()
+
+    return None
+
+
+def generate_pdf_cover_image(campaign):
+    try:
+        first_attachment = campaign.attachments.first()
+
+        if first_attachment:
+            image_bytes = generate_cover_image_from_file(
+                first_attachment.file.path
+            )
+        elif campaign.pdf_attachment:
+            image_bytes = generate_cover_image_from_file(
+                campaign.pdf_attachment.path
+            )
         else:
+            return
+
+        if not image_bytes:
             return
 
         filename = f"campaign_{campaign.id}_cover.png"
