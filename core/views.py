@@ -89,7 +89,44 @@ def campaign_dry_run(request, campaign_id):
         Campaign,
         id=campaign_id,
     )
+    if not campaign.email_subject:
+        messages.error(
+            request,
+            "Add an email subject before creating a dry run.",
+        )
+        return redirect("campaign_preview", campaign_id=campaign.id)
 
+    if not campaign.email_body:
+        messages.error(
+            request,
+            "Add an English email body before creating a dry run.",
+        )
+        return redirect("campaign_preview", campaign_id=campaign.id)
+
+    if campaign.ai_review_required:
+        messages.error(
+            request,
+            (
+                "Please review and accept the AI suggested groups "
+                "before creating a dry run."
+            ),
+        )
+        return redirect("campaign_preview", campaign_id=campaign.id)
+
+    if not campaign.target_groups.exists():
+        messages.error(
+            request,
+            "Select at least one target group before creating a dry run.",
+        )
+        return redirect("campaign_preview", campaign_id=campaign.id)
+
+    if not campaign.attachments.exists() and not campaign.primary_attachment:
+        messages.error(
+            request,
+            "Add at least one campaign attachment before creating a dry run.",
+        )
+        return redirect("campaign_preview", campaign_id=campaign.id)
+    
     if campaign.ai_review_required:
         messages.error(
             request,

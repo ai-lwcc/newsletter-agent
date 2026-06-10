@@ -1,4 +1,5 @@
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 
 from core.models import Campaign, DeliveryLog, Group, Person
@@ -8,10 +9,20 @@ from core.models import Campaign, DeliveryLog, Group, Person
 def test_campaign_dry_run_page_creates_pending_logs(client):
     group = Group.objects.create(name="Pickleball Players")
 
+    fake_file = SimpleUploadedFile(
+        "newsletter.pdf",
+        b"%PDF-1.4 fake pdf content",
+        content_type="application/pdf",
+    )
+
     campaign = Campaign.objects.create(
         title="June Newsletter",
         email_subject="June Updates",
+        email_body="Hello everyone.",
+        primary_attachment=fake_file,
+        ai_review_required=False,
     )
+
     campaign.target_groups.add(group)
 
     person = Person.objects.create(

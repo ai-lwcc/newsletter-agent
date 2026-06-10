@@ -49,5 +49,6 @@ def test_send_campaign_test_email_view(client):
     response = client.get(url)
 
     assert response.status_code == 200
-    assert b"Test email sent." in response.content
+    assert b"Test Email Sent" in response.content
+    assert b"Back to Preview" in response.content
     assert len(mail.outbox) == 1
