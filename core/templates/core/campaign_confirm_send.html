@@ -67,6 +67,30 @@
     </div>
 
     <div class="card">
+        <h2>Campaign Attachments</h2>
+
+        {% if campaign.attachments.all %}
+            <ul>
+                {% for attachment in campaign.attachments.all %}
+                    <li>
+                        <a href="{{ attachment.file.url }}">
+                            {{ attachment.file.name }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% elif campaign.primary_attachment %}
+            <p>
+                <a href="{{ campaign.primary_attachment.url }}">
+                    Download Attached File
+                </a>
+            </p>
+        {% else %}
+            <p>No attachments added.</p>
+        {% endif %}
+    </div>
+
+    <div class="card">
         <h2>Final Confirmation</h2>
 
         <p>
