@@ -242,9 +242,19 @@
     </div>
 
     <div class="card">
-        <h2 class="section-title">Primary Attachment</h2>
+        <h2 class="section-title">Campaign Attachments</h2>
 
-        {% if campaign.primary_attachment %}
+        {% if campaign.attachments.all %}
+            <ul>
+                {% for attachment in campaign.attachments.all %}
+                    <li>
+                        <a href="{{ attachment.file.url }}">
+                            {{ attachment.file.name }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% elif campaign.primary_attachment %}
             <div class="pdf-card">
                 <p><strong>Attached file:</strong></p>
 
@@ -253,7 +263,16 @@
                 </a>
             </div>
         {% else %}
-            <p>No attachment uploaded.</p>
+            <p>No attachments added.</p>
+        {% endif %}
+
+        {% if campaign.cover_link_url %}
+            <p>
+                <strong>Cover image link:</strong>
+                <a href="{{ campaign.cover_link_url }}">
+                    {{ campaign.cover_link_url }}
+                </a>
+            </p>
         {% endif %}
     </div>
 
