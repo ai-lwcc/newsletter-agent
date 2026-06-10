@@ -28,7 +28,7 @@ Campaigns can be created and edited in Django Admin.
 
 PDF attachments, email previews, sending, and scheduling will be added in later phases.
 
-## PDF Attachments
+## Campaign Attachments
 
 Campaigns can include one uploaded PDF attachment.
 

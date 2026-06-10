@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from core.pdf_cover_service import generate_attachment_cover_image
+from core.attachment_cover_service import generate_attachment_cover_image
 from core.tasks import generate_campaign_ai_draft_task
 
 from .campaign_send_service import (
