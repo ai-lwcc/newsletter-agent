@@ -110,6 +110,10 @@
                 </button>
             </form>
 
+            <a class="button secondary" href="/admin/core/campaign/{{ campaign.id }}/change/">
+                Edit Campaign
+            </a>
+            
             <form method="post" action="{% url 'campaign_send_real_emails' campaign.id %}">
                 {% csrf_token %}
                 <button class="button safe" type="submit">
