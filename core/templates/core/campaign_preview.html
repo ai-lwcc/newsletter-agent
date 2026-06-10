@@ -106,18 +106,38 @@
             <div class="preview-box">
                 AI draft request queued. This page will refresh automatically.
             </div>
+
         {% elif campaign.ai_status == "processing" %}
             <div class="preview-box">
                 AI is currently generating the campaign draft. This page will refresh automatically.
             </div>
+
         {% elif campaign.ai_status == "completed" %}
             <div class="preview-box">
                 AI draft generation completed successfully.
             </div>
+
         {% elif campaign.ai_status == "failed" %}
             <div class="preview-box">
-                AI draft generation failed. Check Celery worker logs.
+                AI draft generation failed.
             </div>
+
+            {% if campaign.ai_summary %}
+                <div class="preview-box">
+                    <strong>Error Details:</strong><br>
+                    {{ campaign.ai_summary|linebreaks }}
+                </div>
+            {% endif %}
+
+            <div class="actions">
+                <a
+                    class="button"
+                    href="{% url 'campaign_generate_ai_draft' campaign.id %}"
+                >
+                    Retry AI Draft Generation
+                </a>
+            </div>
+
         {% else %}
             <div class="preview-box">
                 No AI draft has been generated yet.
