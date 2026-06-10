@@ -207,6 +207,41 @@ def campaign_send_real_emails(request, campaign_id):
 
     campaign = get_object_or_404(Campaign, id=campaign_id)
 
+    if campaign.ai_review_required:
+        messages.error(
+            request,
+            "Please review and accept AI suggested groups before sending.",
+        )
+        return redirect("campaign_confirm_send", campaign_id=campaign.id)
+
+    if not campaign.email_subject:
+        messages.error(
+            request,
+            "Cannot send campaign without an email subject.",
+        )
+        return redirect("campaign_confirm_send", campaign_id=campaign.id)
+
+    if not campaign.email_body:
+        messages.error(
+            request,
+            "Cannot send campaign without an English email body.",
+        )
+        return redirect("campaign_confirm_send", campaign_id=campaign.id)
+
+    if not campaign.target_groups.exists():
+        messages.error(
+            request,
+            "Cannot send campaign without at least one target group.",
+        )
+        return redirect("campaign_confirm_send", campaign_id=campaign.id)
+
+    if not campaign.attachments.exists() and not campaign.primary_attachment:
+        messages.error(
+            request,
+            "Cannot send campaign without at least one attachment.",
+        )
+        return redirect("campaign_confirm_send", campaign_id=campaign.id)
+
     try:
         result = send_pending_campaign_emails(campaign)
 
