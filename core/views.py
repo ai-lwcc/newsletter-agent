@@ -330,7 +330,7 @@ def campaign_accept_ai_groups(request, campaign_id):
 
 
 @login_required
-@ratelimit(key="user", rate="5/h", block=True)
+@ratelimit(key="user", rate="10/h", block=True)
 # @permission_required("core.add_campaign", raise_exception=True)
 def ai_campaign_create(request):
     if request.method == "POST":

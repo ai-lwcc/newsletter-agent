@@ -119,12 +119,43 @@ class DeliveryLogAdmin(admin.ModelAdmin):
         "sent_at",
         "created_at",
     )
-    list_filter = ("channel", "status", "campaign")
+
+    list_filter = (
+        "channel",
+        "status",
+        "campaign",
+        "created_at",
+        "sent_at",
+    )
+
     search_fields = (
         "campaign__title",
         "person__full_name",
         "person__email",
+        "person__whatsapp_number",
         "error_message",
+    )
+
+    ordering = (
+        "-created_at",
+    )
+
+    list_per_page = 50
+
+    autocomplete_fields = (
+        "campaign",
+        "person",
+    )
+
+    readonly_fields = (
+        "campaign",
+        "person",
+        "channel",
+        "status",
+        "error_message",
+        "sent_at",
+        "created_at",
+        "updated_at",
     )
 
 @admin.register(CampaignAttachment)
