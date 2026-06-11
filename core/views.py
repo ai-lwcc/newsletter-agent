@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -91,6 +91,7 @@ def campaign_recipients(request, campaign_id):
 
 
 @login_required
+# @permission_required("core.change_campaign", raise_exception=True)
 def campaign_dry_run(request, campaign_id):
     campaign = get_object_or_404(
         Campaign,
@@ -256,6 +257,7 @@ def campaign_send_real_emails(request, campaign_id):
 
 
 @login_required
+# @permission_required("core.change_campaign", raise_exception=True)
 def campaign_retry_failed_emails(request, campaign_id):
     if request.method != "POST":
         return redirect("campaign_confirm_send", campaign_id=campaign_id)
@@ -289,6 +291,7 @@ def campaign_schedule_status(request, campaign_id):
 
 
 @login_required
+# @permission_required("core.change_campaign", raise_exception=True)
 def campaign_generate_ai_draft(request, campaign_id):
     campaign = get_object_or_404(Campaign, id=campaign_id)
 
@@ -301,6 +304,7 @@ def campaign_generate_ai_draft(request, campaign_id):
 
 
 @login_required
+# @permission_required("core.change_campaign", raise_exception=True)
 def campaign_accept_ai_groups(request, campaign_id):
     campaign = get_object_or_404(Campaign, id=campaign_id)
 
@@ -318,6 +322,7 @@ def campaign_accept_ai_groups(request, campaign_id):
 
 
 @login_required
+# @permission_required("core.add_campaign", raise_exception=True)
 def ai_campaign_create(request):
     if request.method == "POST":
         form = AICampaignCreateForm(
