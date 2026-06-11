@@ -5,7 +5,7 @@ from core.models import Campaign, Group
 
 
 @pytest.mark.django_db
-def test_campaign_preview_page_loads(client):
+def test_campaign_preview_page_loads(authenticated_client):
     group = Group.objects.create(name="Pickleball Players")
 
     campaign = Campaign.objects.create(
@@ -22,7 +22,7 @@ def test_campaign_preview_page_loads(client):
         kwargs={"campaign_id": campaign.id},
     )
 
-    response = client.get(url)
+    response = authenticated_client.get(url)
 
     assert response.status_code == 200
     assert b"June Pickleball Newsletter" in response.content

@@ -7,7 +7,7 @@ from core.models import Person
 
 
 @pytest.mark.django_db
-def test_campaign_recipients_page(client):
+def test_campaign_recipients_page(authenticated_client):
     group = Group.objects.create(
         name="Pickleball Players"
     )
@@ -34,7 +34,7 @@ def test_campaign_recipients_page(client):
         }
     )
 
-    response = client.get(url)
+    response = authenticated_client.get(url)
 
     assert response.status_code == 200
 

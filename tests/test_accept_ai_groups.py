@@ -5,7 +5,7 @@ from core.models import Campaign, Group
 
 
 @pytest.mark.django_db
-def test_accept_ai_groups_applies_suggested_groups(client):
+def test_accept_ai_groups_applies_suggested_groups(authenticated_client):
     group = Group.objects.create(name="General Newsletter")
 
     campaign = Campaign.objects.create(
@@ -20,7 +20,7 @@ def test_accept_ai_groups_applies_suggested_groups(client):
         kwargs={"campaign_id": campaign.id},
     )
 
-    response = client.get(url)
+    response = authenticated_client.get(url)
 
     campaign.refresh_from_db()
 

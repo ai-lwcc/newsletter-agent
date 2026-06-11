@@ -6,15 +6,15 @@ from core.models import Campaign
 
 
 @pytest.mark.django_db
-def test_ai_campaign_create_page_loads(client):
-    response = client.get(reverse("ai_campaign_create"))
+def test_ai_campaign_create_page_loads(authenticated_client):
+    response = authenticated_client.get(reverse("ai_campaign_create"))
 
     assert response.status_code == 200
     assert b"Create AI Campaign" in response.content
 
 
 @pytest.mark.django_db
-def test_ai_campaign_create_creates_campaign(client, monkeypatch):
+def test_ai_campaign_create_creates_campaign(authenticated_client, monkeypatch):
     queued_campaign_ids = []
 
     class FakeTask:
@@ -32,7 +32,7 @@ def test_ai_campaign_create_creates_campaign(client, monkeypatch):
         content_type="application/pdf",
     )
 
-    response = client.post(
+    response = authenticated_client.post(
         reverse("ai_campaign_create"),
         {
             "title": "AI Annual Report Campaign",
@@ -55,7 +55,7 @@ def test_ai_campaign_create_creates_campaign(client, monkeypatch):
 
 
 @pytest.mark.django_db
-def test_ai_campaign_create_can_set_scheduling(client, monkeypatch):
+def test_ai_campaign_create_can_set_scheduling(authenticated_client, monkeypatch):
     queued_campaign_ids = []
 
     class FakeTask:
@@ -73,7 +73,7 @@ def test_ai_campaign_create_can_set_scheduling(client, monkeypatch):
         content_type="application/pdf",
     )
 
-    response = client.post(
+    response = authenticated_client.post(
         reverse("ai_campaign_create"),
         {
             "title": "Scheduled AI Campaign",

@@ -5,7 +5,7 @@ from core.models import Campaign, Group
 
 
 @pytest.mark.django_db
-def test_generate_ai_draft_view_queues_task(client, monkeypatch):
+def test_generate_ai_draft_view_queues_task(authenticated_client, monkeypatch):
     Group.objects.create(name="General Newsletter")
 
     campaign = Campaign.objects.create(
@@ -31,7 +31,7 @@ def test_generate_ai_draft_view_queues_task(client, monkeypatch):
         kwargs={"campaign_id": campaign.id},
     )
 
-    response = client.get(url)
+    response = authenticated_client.get(url)
 
     campaign.refresh_from_db()
 

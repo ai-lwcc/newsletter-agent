@@ -6,7 +6,7 @@ from core.models import Campaign, DeliveryLog, Group, Person
 
 
 @pytest.mark.django_db
-def test_campaign_dry_run_page_creates_pending_logs(client):
+def test_campaign_dry_run_page_creates_pending_logs(authenticated_client):
     group = Group.objects.create(name="Pickleball Players")
 
     fake_file = SimpleUploadedFile(
@@ -37,7 +37,7 @@ def test_campaign_dry_run_page_creates_pending_logs(client):
         kwargs={"campaign_id": campaign.id},
     )
 
-    response = client.get(url)
+    response = authenticated_client.get(url)
 
     assert response.status_code == 200
     assert b"No real emails were sent." in response.content

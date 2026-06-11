@@ -8,7 +8,7 @@ from core.models import Campaign, DeliveryLog, Group, Person
 
 @pytest.mark.django_db
 @override_settings(SEND_REAL_EMAILS=False, MAX_EMAILS_PER_DAY=300)
-def test_confirm_send_page_loads(client):
+def test_confirm_send_page_loads(authenticated_client):
     group = Group.objects.create(name="Pickleball Players")
 
     campaign = Campaign.objects.create(
@@ -32,7 +32,7 @@ def test_confirm_send_page_loads(client):
         kwargs={"campaign_id": campaign.id},
     )
 
-    response = client.get(url)
+    response = authenticated_client.get(url)
 
     assert response.status_code == 200
     assert b"Confirm Campaign Send" in response.content
@@ -42,7 +42,7 @@ def test_confirm_send_page_loads(client):
 
 @pytest.mark.django_db
 @override_settings(SEND_REAL_EMAILS=False, MAX_EMAILS_PER_DAY=300)
-def test_real_send_post_blocked_when_disabled(client):
+def test_real_send_post_blocked_when_disabled(authenticated_client):
     group = Group.objects.create(name="Pickleball Players")
 
     campaign = Campaign.objects.create(
@@ -66,7 +66,7 @@ def test_real_send_post_blocked_when_disabled(client):
         kwargs={"campaign_id": campaign.id},
     )
 
-    response = client.post(url)
+    response = authenticated_client.post(url)
 
     assert response.status_code == 302
 
@@ -79,7 +79,7 @@ def test_real_send_post_blocked_when_disabled(client):
 
 @pytest.mark.django_db
 @override_settings(SEND_REAL_EMAILS=False, MAX_EMAILS_PER_DAY=300)
-def test_confirm_send_page_shows_delivery_summary(client):
+def test_confirm_send_page_shows_delivery_summary(authenticated_client):
     group = Group.objects.create(name="Pickleball Players")
 
     campaign = Campaign.objects.create(
@@ -106,7 +106,7 @@ def test_confirm_send_page_shows_delivery_summary(client):
         kwargs={"campaign_id": campaign.id},
     )
 
-    response = client.get(url)
+    response = authenticated_client.get(url)
 
     assert response.status_code == 200
     assert b"Failed emails:" in response.content

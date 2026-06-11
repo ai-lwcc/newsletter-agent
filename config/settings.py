@@ -136,3 +136,6 @@ CELERY_RESULT_BACKEND = os.getenv(
 CELERY_TIMEZONE = "America/Toronto"
 
 EMAIL_PROVIDER = os.getenv("EMAIL_PROVIDER", "smtp")
+
+LOGIN_URL = "/admin/login/"
+LOGIN_REDIRECT_URL = "/"

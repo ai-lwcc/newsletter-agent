@@ -34,7 +34,7 @@ def test_send_campaign_test_email_service():
     DEFAULT_FROM_EMAIL="newsletter@example.com",
     TEST_RECIPIENT_EMAIL="sender@example.com",
 )
-def test_send_campaign_test_email_view(client):
+def test_send_campaign_test_email_view(authenticated_client):
     campaign = Campaign.objects.create(
         title="June Newsletter",
         email_subject="June Updates",
@@ -46,7 +46,7 @@ def test_send_campaign_test_email_view(client):
         kwargs={"campaign_id": campaign.id},
     )
 
-    response = client.get(url)
+    response = authenticated_client.get(url)
 
     assert response.status_code == 200
     assert b"Test Email Sent" in response.content

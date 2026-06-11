@@ -36,7 +36,7 @@ def test_retry_failed_campaign_emails_service():
 
 
 @pytest.mark.django_db
-def test_retry_failed_campaign_emails_view(client):
+def test_retry_failed_campaign_emails_view(authenticated_client):
     campaign = Campaign.objects.create(
         title="June Newsletter",
         email_subject="June Updates",
@@ -61,7 +61,7 @@ def test_retry_failed_campaign_emails_view(client):
         kwargs={"campaign_id": campaign.id},
     )
 
-    response = client.post(url)
+    response = authenticated_client.post(url)
 
     log.refresh_from_db()
 

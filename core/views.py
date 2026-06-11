@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib import messages
-from django.http import HttpResponse, JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from core.attachment_cover_service import generate_attachment_cover_image
@@ -24,6 +25,7 @@ def health_check(request):
     return JsonResponse({"status": "ok"})
 
 
+@login_required
 def dashboard(request):
     campaigns = Campaign.objects.all().order_by("-created_at")[:10]
 
@@ -36,6 +38,7 @@ def dashboard(request):
     )
 
 
+@login_required
 def campaign_preview(request, campaign_id):
     campaign = get_object_or_404(Campaign, id=campaign_id)
 
@@ -48,6 +51,7 @@ def campaign_preview(request, campaign_id):
     )
 
 
+@login_required
 def send_campaign_test_email_view(request, campaign_id):
     campaign = get_object_or_404(
         Campaign,
@@ -64,6 +68,8 @@ def send_campaign_test_email_view(request, campaign_id):
         },
     )
 
+
+@login_required
 def campaign_recipients(request, campaign_id):
     campaign = get_object_or_404(
         Campaign,
@@ -84,11 +90,13 @@ def campaign_recipients(request, campaign_id):
     )
 
 
+@login_required
 def campaign_dry_run(request, campaign_id):
     campaign = get_object_or_404(
         Campaign,
         id=campaign_id,
     )
+
     if not campaign.email_subject:
         messages.error(
             request,
@@ -126,20 +134,6 @@ def campaign_dry_run(request, campaign_id):
             "Add at least one campaign attachment before creating a dry run.",
         )
         return redirect("campaign_preview", campaign_id=campaign.id)
-    
-    if campaign.ai_review_required:
-        messages.error(
-            request,
-            (
-                "Please review and accept the AI suggested groups "
-                "before creating a dry run."
-            ),
-        )
-
-        return redirect(
-            "campaign_preview",
-            campaign_id=campaign.id,
-        )
 
     result = create_campaign_dry_run_logs(campaign)
 
@@ -159,6 +153,7 @@ def campaign_dry_run(request, campaign_id):
     )
 
 
+@login_required
 def campaign_confirm_send(request, campaign_id):
     campaign = get_object_or_404(Campaign, id=campaign_id)
 
@@ -201,6 +196,7 @@ def campaign_confirm_send(request, campaign_id):
     )
 
 
+@login_required
 def campaign_send_real_emails(request, campaign_id):
     if request.method != "POST":
         return redirect("campaign_confirm_send", campaign_id=campaign_id)
@@ -259,6 +255,7 @@ def campaign_send_real_emails(request, campaign_id):
     return redirect("campaign_confirm_send", campaign_id=campaign.id)
 
 
+@login_required
 def campaign_retry_failed_emails(request, campaign_id):
     if request.method != "POST":
         return redirect("campaign_confirm_send", campaign_id=campaign_id)
@@ -275,6 +272,7 @@ def campaign_retry_failed_emails(request, campaign_id):
     return redirect("campaign_confirm_send", campaign_id=campaign.id)
 
 
+@login_required
 def campaign_schedule_status(request, campaign_id):
     campaign = get_object_or_404(Campaign, id=campaign_id)
 
@@ -290,6 +288,7 @@ def campaign_schedule_status(request, campaign_id):
     )
 
 
+@login_required
 def campaign_generate_ai_draft(request, campaign_id):
     campaign = get_object_or_404(Campaign, id=campaign_id)
 
@@ -301,6 +300,7 @@ def campaign_generate_ai_draft(request, campaign_id):
     return redirect("campaign_preview", campaign_id=campaign.id)
 
 
+@login_required
 def campaign_accept_ai_groups(request, campaign_id):
     campaign = get_object_or_404(Campaign, id=campaign_id)
 
@@ -317,6 +317,7 @@ def campaign_accept_ai_groups(request, campaign_id):
     return redirect("campaign_preview", campaign_id=campaign.id)
 
 
+@login_required
 def ai_campaign_create(request):
     if request.method == "POST":
         form = AICampaignCreateForm(

@@ -6,7 +6,7 @@ from core.models import Campaign, DeliveryLog, Person
 
 
 @pytest.mark.django_db
-def test_campaign_schedule_status_page_loads(client):
+def test_campaign_schedule_status_page_loads(authenticated_client):
     campaign = Campaign.objects.create(
         title="Scheduled Campaign",
         email_subject="Scheduled Subject",
@@ -33,7 +33,7 @@ def test_campaign_schedule_status_page_loads(client):
         kwargs={"campaign_id": campaign.id},
     )
 
-    response = client.get(url)
+    response = authenticated_client.get(url)
 
     assert response.status_code == 200
     assert b"Schedule Status" in response.content
