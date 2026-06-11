@@ -14,6 +14,16 @@ TONE_CHOICES = [
     ("church", "Church / Community"),
 ]
 
+ALLOWED_ATTACHMENT_EXTENSIONS = {
+    ".pdf",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".webp",
+}
+
+MAX_ATTACHMENT_SIZE_MB = 25
+MAX_ATTACHMENT_SIZE_BYTES = MAX_ATTACHMENT_SIZE_MB * 1024 * 1024
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
@@ -87,3 +97,32 @@ class AICampaignCreateForm(forms.Form):
             "time arrives, but only after dry-run logs exist."
         ),
     )
+    def clean_attachments(self):
+        files = self.files.getlist("attachments")
+
+        if not files:
+            raise forms.ValidationError(
+                "Upload at least one campaign file."
+            )
+
+        for uploaded_file in files:
+            extension = uploaded_file.name.lower().rsplit(".", 1)
+
+            if len(extension) != 2:
+                raise forms.ValidationError(
+                    "Each file must have a valid extension."
+                )
+
+            extension = f".{extension[1]}"
+
+            if extension not in ALLOWED_ATTACHMENT_EXTENSIONS:
+                raise forms.ValidationError(
+                    "Only PDF, PNG, JPG, JPEG, and WEBP files are allowed."
+                )
+
+            if uploaded_file.size > MAX_ATTACHMENT_SIZE_BYTES:
+                raise forms.ValidationError(
+                    f"Each file must be {MAX_ATTACHMENT_SIZE_MB}MB or smaller."
+                )
+
+        return files
