@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-
+from django_ratelimit.decorators import ratelimit
 from core.attachment_cover_service import generate_attachment_cover_image
 from core.tasks import generate_campaign_ai_draft_task
 
@@ -52,6 +52,7 @@ def campaign_preview(request, campaign_id):
 
 
 @login_required
+@ratelimit(key="user", rate="5/h", block=True)
 def send_campaign_test_email_view(request, campaign_id):
     campaign = get_object_or_404(
         Campaign,
@@ -198,6 +199,7 @@ def campaign_confirm_send(request, campaign_id):
 
 
 @login_required
+@ratelimit(key="user", rate="5/h", block=True)
 def campaign_send_real_emails(request, campaign_id):
     if request.method != "POST":
         return redirect("campaign_confirm_send", campaign_id=campaign_id)
@@ -291,6 +293,7 @@ def campaign_schedule_status(request, campaign_id):
 
 
 @login_required
+@ratelimit(key="user", rate="5/h", block=True)
 # @permission_required("core.change_campaign", raise_exception=True)
 def campaign_generate_ai_draft(request, campaign_id):
     campaign = get_object_or_404(Campaign, id=campaign_id)
@@ -322,6 +325,7 @@ def campaign_accept_ai_groups(request, campaign_id):
 
 
 @login_required
+@ratelimit(key="user", rate="5/h", block=True)
 # @permission_required("core.add_campaign", raise_exception=True)
 def ai_campaign_create(request):
     if request.method == "POST":

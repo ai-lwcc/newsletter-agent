@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "core",
     "django_extensions",
     "django_celery_beat",
+    "django_ratelimit",
 ]
 
 MIDDLEWARE = [
