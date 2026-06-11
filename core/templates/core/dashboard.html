@@ -12,12 +12,16 @@
 
     <div class="card">
         <h1>Newsletter Agent Dashboard</h1>
-        <p>Manage campaigns, contacts, delivery logs, previews, dry runs, and scheduled sends.</p>
+        <p>
+            Manage campaigns, contacts, delivery logs,
+            previews, dry runs, and scheduled sends.
+        </p>
 
         <div class="actions">
             <a class="button safe" href="{% url 'ai_campaign_create' %}">
                 Create AI Campaign
             </a>
+
             <a class="button" href="/admin/core/campaign/add/">
                 Create Campaign
             </a>
@@ -41,7 +45,7 @@
     </div>
 
     <div class="card">
-        <h2>Recent Campaigns</h2>
+        <h2>Campaigns</h2>
 
         {% if campaigns %}
             <table>
@@ -55,24 +59,74 @@
                 {% for campaign in campaigns %}
                     <tr>
                         <td>{{ campaign.title }}</td>
-                        <td>{{ campaign.status }}</td>
-                        <td>{{ campaign.scheduled_send_time|default:"Not scheduled" }}</td>
+
                         <td>
-                            <a href="{% url 'campaign_preview' campaign.id %}">Preview</a>
+                            {{ campaign.status }}
+                        </td>
+
+                        <td>
+                            {{ campaign.scheduled_send_time|default:"Not scheduled" }}
+                        </td>
+
+                        <td>
+                            <a href="{% url 'campaign_preview' campaign.id %}">
+                                Preview
+                            </a>
                             |
-                            <a href="{% url 'campaign_recipients' campaign.id %}">Recipients</a>
+                            <a href="{% url 'campaign_recipients' campaign.id %}">
+                                Recipients
+                            </a>
                             |
-                            <a href="{% url 'campaign_dry_run' campaign.id %}">Dry Run</a>
+                            <a href="{% url 'campaign_dry_run' campaign.id %}">
+                                Dry Run
+                            </a>
                             |
-                            <a href="{% url 'campaign_confirm_send' campaign.id %}">Confirm Send</a>
+                            <a href="{% url 'campaign_confirm_send' campaign.id %}">
+                                Confirm Send
+                            </a>
                             |
-                            <a href="{% url 'campaign_schedule_status' campaign.id %}">Schedule Status</a>
+                            <a href="{% url 'campaign_schedule_status' campaign.id %}">
+                                Schedule Status
+                            </a>
                             |
-                            <a href="/admin/core/campaign/{{ campaign.id }}/change/">Edit</a>
+                            <a href="/admin/core/campaign/{{ campaign.id }}/change/">
+                                Edit
+                            </a>
                         </td>
                     </tr>
                 {% endfor %}
             </table>
+
+            {% if campaigns.has_other_pages %}
+                <div class="actions" style="margin-top: 20px;">
+
+                    {% if campaigns.has_previous %}
+                        <a
+                            class="button secondary"
+                            href="?page={{ campaigns.previous_page_number }}"
+                        >
+                            Previous
+                        </a>
+                    {% endif %}
+
+                    <span>
+                        Page {{ campaigns.number }}
+                        of
+                        {{ campaigns.paginator.num_pages }}
+                    </span>
+
+                    {% if campaigns.has_next %}
+                        <a
+                            class="button secondary"
+                            href="?page={{ campaigns.next_page_number }}"
+                        >
+                            Next
+                        </a>
+                    {% endif %}
+
+                </div>
+            {% endif %}
+
         {% else %}
             <p>No campaigns yet.</p>
         {% endif %}

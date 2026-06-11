@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django_ratelimit.decorators import ratelimit
 from core.attachment_cover_service import generate_attachment_cover_image
 from core.tasks import generate_campaign_ai_draft_task
-
+from django.core.paginator import Paginator
 from .campaign_send_service import (
     DailyEmailLimitExceeded,
     RealEmailSendingDisabled,
@@ -27,7 +27,12 @@ def health_check(request):
 
 @login_required
 def dashboard(request):
-    campaigns = Campaign.objects.all().order_by("-created_at")[:10]
+    campaign_list = Campaign.objects.all().order_by("-created_at")
+
+    paginator = Paginator(campaign_list, 10)
+
+    page_number = request.GET.get("page")
+    campaigns = paginator.get_page(page_number)
 
     return render(
         request,
