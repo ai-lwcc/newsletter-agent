@@ -276,7 +276,6 @@ def campaign_confirm_send(request, campaign_id):
 
 
 @login_required
-@ratelimit(key="user", rate="5/h", block=True)
 def campaign_send_real_emails(request, campaign_id):
     if request.method != "POST":
         return redirect("campaign_confirm_send", campaign_id=campaign_id)
