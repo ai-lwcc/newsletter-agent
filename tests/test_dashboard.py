@@ -16,5 +16,5 @@ def test_dashboard_loads(authenticated_client):
     assert response.status_code == 200
     assert b"Newsletter Agent Dashboard" in response.content
     assert b"Dashboard Test Campaign" in response.content
-    assert b"Preview" in response.content
+    assert b"Details" in response.content
     assert b"Schedule Status" in response.content

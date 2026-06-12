@@ -16,6 +16,7 @@ from .views import (
     ai_campaign_create,
     delivery_logs,
     audit_logs,
+    campaign_detail,
 )
 
 urlpatterns = [
@@ -91,5 +92,10 @@ urlpatterns = [
         "audit-logs/",
         audit_logs,
         name="audit_logs",
+    ),
+    path(
+        "campaigns/<int:campaign_id>/",
+        campaign_detail,
+        name="campaign_detail",
     ),
 ]

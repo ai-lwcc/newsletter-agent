@@ -1,0 +1,228 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ campaign.title }}</title>
+    <link rel="stylesheet" href="{% static 'core/styles.css' %}">
+</head>
+<body>
+
+<div class="container">
+
+    <p>
+        <a href="{% url 'dashboard' %}">
+            ← Back to Dashboard
+        </a>
+    </p>
+
+    <div class="card header">
+        <div>
+            <h1>{{ campaign.title }}</h1>
+            <p>
+                <strong>Status:</strong>
+                {{ campaign.status }}
+            </p>
+            <p>
+                <strong>Email Subject:</strong>
+                {{ campaign.email_subject|default:"No subject yet" }}
+            </p>
+        </div>
+
+        <div class="actions">
+            <a
+                class="button secondary"
+                href="/admin/core/campaign/{{ campaign.id }}/change/"
+            >
+                Edit Campaign
+            </a>
+
+            <a
+                class="button"
+                href="{% url 'campaign_preview' campaign.id %}"
+            >
+                Full Preview
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Workflow Actions</h2>
+
+        <div class="actions">
+            <a
+                class="button safe"
+                href="{% url 'campaign_generate_ai_draft' campaign.id %}"
+            >
+                Generate AI Draft
+            </a>
+
+            <a
+                class="button secondary"
+                href="{% url 'send_campaign_test_email' campaign.id %}"
+            >
+                Send Test Email
+            </a>
+
+            <a
+                class="button secondary"
+                href="{% url 'campaign_recipients' campaign.id %}"
+            >
+                View Recipients
+            </a>
+
+            <a
+                class="button safe"
+                href="{% url 'campaign_dry_run' campaign.id %}"
+            >
+                Create Dry Run
+            </a>
+
+            <a
+                class="button"
+                href="{% url 'campaign_confirm_send' campaign.id %}"
+            >
+                Confirm Send
+            </a>
+
+            <a
+                class="button secondary"
+                href="{% url 'campaign_schedule_status' campaign.id %}"
+            >
+                Schedule Status
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>AI Status</h2>
+
+        <p>
+            <strong>Status:</strong>
+            {{ campaign.ai_status }}
+        </p>
+
+        <p>
+            <strong>Generated At:</strong>
+            {{ campaign.ai_generated_at|default:"Not generated yet" }}
+        </p>
+
+        <p>
+            <strong>Review Required:</strong>
+            {{ campaign.ai_review_required }}
+        </p>
+
+        {% if campaign.ai_summary %}
+            <div class="preview-box">
+                {{ campaign.ai_summary|linebreaks }}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2>Delivery Summary</h2>
+
+        <div class="actions">
+            <span class="badge">
+                Pending: {{ delivery_summary.pending }}
+            </span>
+
+            <span class="badge">
+                Sent: {{ delivery_summary.sent }}
+            </span>
+
+            <span class="badge">
+                Failed: {{ delivery_summary.failed }}
+            </span>
+
+            <span class="badge">
+                Skipped: {{ delivery_summary.skipped }}
+            </span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Target Groups</h2>
+
+        <ul class="group-list">
+            {% for group in campaign.target_groups.all %}
+                <li class="group-pill">{{ group.name }}</li>
+            {% empty %}
+                <li>No target groups selected.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="card">
+        <h2>Attachments</h2>
+
+        {% if campaign.attachments.all %}
+            <ul>
+                {% for attachment in campaign.attachments.all %}
+                    <li>
+                        <a href="{{ attachment.file.url }}">
+                            {{ attachment.file.name }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% elif campaign.primary_attachment %}
+            <p>
+                <a href="{{ campaign.primary_attachment.url }}">
+                    Download Attached File
+                </a>
+            </p>
+        {% else %}
+            <p>No attachments uploaded.</p>
+        {% endif %}
+
+        {% if campaign.cover_link_url %}
+            <p>
+                <strong>Cover Link URL:</strong>
+                <a href="{{ campaign.cover_link_url }}">
+                    {{ campaign.cover_link_url }}
+                </a>
+            </p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2>Recent Audit Activity</h2>
+
+        {% if recent_audit_logs %}
+            <table>
+                <tr>
+                    <th>Time</th>
+                    <th>User</th>
+                    <th>Action</th>
+                </tr>
+
+                {% for log in recent_audit_logs %}
+                    <tr>
+                        <td>{{ log.created_at }}</td>
+                        <td>
+                            {% if log.user %}
+                                {{ log.user.username }}
+                            {% else %}
+                                System / Unknown
+                            {% endif %}
+                        </td>
+                        <td>{{ log.get_action_display }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p>No audit activity yet.</p>
+        {% endif %}
+
+        <p>
+            <a href="{% url 'audit_logs' %}?campaign={{ campaign.id }}">
+                View full audit history
+            </a>
+        </p>
+    </div>
+
+</div>
+
+</body>
+</html>

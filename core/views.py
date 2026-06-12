@@ -768,3 +768,42 @@ def audit_logs(request):
             "summary": summary,
         },
     )
+
+@login_required
+def campaign_detail(request, campaign_id):
+    campaign = get_object_or_404(
+        Campaign.objects.prefetch_related(
+            "target_groups",
+            "attachments",
+        ),
+        id=campaign_id,
+    )
+
+    delivery_summary = {
+        "pending": campaign.delivery_logs.filter(
+            status=DeliveryLog.STATUS_PENDING,
+        ).count(),
+        "sent": campaign.delivery_logs.filter(
+            status=DeliveryLog.STATUS_SENT,
+        ).count(),
+        "failed": campaign.delivery_logs.filter(
+            status=DeliveryLog.STATUS_FAILED,
+        ).count(),
+        "skipped": campaign.delivery_logs.filter(
+            status=DeliveryLog.STATUS_SKIPPED,
+        ).count(),
+    }
+
+    recent_audit_logs = campaign.user_action_logs.select_related(
+        "user",
+    ).order_by("-created_at")[:5]
+
+    return render(
+        request,
+        "core/campaign_detail.html",
+        {
+            "campaign": campaign,
+            "delivery_summary": delivery_summary,
+            "recent_audit_logs": recent_audit_logs,
+        },
+    )
