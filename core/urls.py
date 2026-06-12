@@ -15,6 +15,7 @@ from .views import (
     campaign_accept_ai_groups,
     ai_campaign_create,
     delivery_logs,
+    audit_logs,
 )
 
 urlpatterns = [
@@ -85,5 +86,10 @@ urlpatterns = [
         "delivery-logs/",
         delivery_logs,
         name="delivery_logs",
+    ),
+    path(
+        "audit-logs/",
+        audit_logs,
+        name="audit_logs",
     ),
 ]

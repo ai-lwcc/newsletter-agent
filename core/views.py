@@ -700,3 +700,71 @@ def delivery_logs(request):
             "query_string": query_string,
         },
     )
+
+@login_required
+def audit_logs(request):
+    logs = UserActionLog.objects.select_related(
+        "user",
+        "campaign",
+    ).order_by("-created_at")
+
+    action = request.GET.get("action")
+    campaign_id = request.GET.get("campaign")
+
+    if action:
+        logs = logs.filter(action=action)
+
+    if campaign_id:
+        logs = logs.filter(campaign_id=campaign_id)
+
+    summary = {
+        "total": logs.count(),
+        "ai_campaign_created": logs.filter(
+            action=UserActionLog.ACTION_AI_CAMPAIGN_CREATED,
+        ).count(),
+        "ai_draft_queued": logs.filter(
+            action=UserActionLog.ACTION_AI_DRAFT_QUEUED,
+        ).count(),
+        "test_email_sent": logs.filter(
+            action=UserActionLog.ACTION_TEST_EMAIL_SENT,
+        ).count(),
+        "dry_run_created": logs.filter(
+            action=UserActionLog.ACTION_DRY_RUN_CREATED,
+        ).count(),
+        "real_send_requested": logs.filter(
+            action=UserActionLog.ACTION_REAL_SEND_REQUESTED,
+        ).count(),
+        "failed_emails_retried": logs.filter(
+            action=UserActionLog.ACTION_FAILED_EMAILS_RETRIED,
+        ).count(),
+        "ai_groups_accepted": logs.filter(
+            action=UserActionLog.ACTION_AI_GROUPS_ACCEPTED,
+        ).count(),
+    }
+
+    paginator = Paginator(logs, 50)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    query_params = request.GET.copy()
+
+    if "page" in query_params:
+        query_params.pop("page")
+
+    query_string = query_params.urlencode()
+
+    campaigns = Campaign.objects.all().order_by("-created_at")
+
+    return render(
+        request,
+        "core/audit_logs.html",
+        {
+            "logs": page_obj,
+            "campaigns": campaigns,
+            "action_choices": UserActionLog.ACTION_CHOICES,
+            "selected_action": action,
+            "selected_campaign": campaign_id,
+            "query_string": query_string,
+            "summary": summary,
+        },
+    )

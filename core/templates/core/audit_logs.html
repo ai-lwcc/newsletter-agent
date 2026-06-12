@@ -1,0 +1,177 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Audit Logs</title>
+    <link rel="stylesheet" href="{% static 'core/styles.css' %}">
+</head>
+<body>
+
+<div class="container">
+
+    <p>
+        <a href="{% url 'dashboard' %}">
+            ← Back to Dashboard
+        </a>
+    </p>
+
+    <div class="card">
+        <h1>Audit Logs</h1>
+        <p>
+            Review staff actions such as campaign creation, AI draft generation,
+            test sends, dry runs, and real send requests.
+        </p>
+    </div>
+
+    <div class="card">
+        <h2>Summary</h2>
+
+        <div class="actions">
+            <span class="badge">Total: {{ summary.total }}</span>
+            <span class="badge">AI Campaigns: {{ summary.ai_campaign_created }}</span>
+            <span class="badge">AI Drafts: {{ summary.ai_draft_queued }}</span>
+            <span class="badge">Test Emails: {{ summary.test_email_sent }}</span>
+            <span class="badge">Dry Runs: {{ summary.dry_run_created }}</span>
+            <span class="badge">Real Sends: {{ summary.real_send_requested }}</span>
+            <span class="badge">Retries: {{ summary.failed_emails_retried }}</span>
+            <span class="badge">Groups Accepted: {{ summary.ai_groups_accepted }}</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Filters</h2>
+
+        <form method="get" class="actions">
+
+            <select name="action">
+                <option value="">All actions</option>
+
+                {% for value, label in action_choices %}
+                    <option
+                        value="{{ value }}"
+                        {% if selected_action == value %}selected{% endif %}
+                    >
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <select name="campaign">
+                <option value="">All campaigns</option>
+
+                {% for campaign in campaigns %}
+                    <option
+                        value="{{ campaign.id }}"
+                        {% if selected_campaign == campaign.id|stringformat:"s" %}selected{% endif %}
+                    >
+                        {{ campaign.title }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <button class="button" type="submit">
+                Apply Filters
+            </button>
+
+            <a class="button secondary" href="{% url 'audit_logs' %}">
+                Clear
+            </a>
+
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Logs</h2>
+
+        {% if logs %}
+            <table>
+                <tr>
+                    <th>Time</th>
+                    <th>User</th>
+                    <th>Campaign</th>
+                    <th>Action</th>
+                    <th>Details</th>
+                </tr>
+
+                {% for log in logs %}
+                    <tr>
+                        <td style="white-space: nowrap;">
+                            {{ log.created_at }}
+                        </td>
+
+                        <td>
+                            {% if log.user %}
+                                {{ log.user.username }}
+                            {% else %}
+                                System / Unknown
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if log.campaign %}
+                                <a href="{% url 'campaign_preview' log.campaign.id %}">
+                                    {{ log.campaign.title }}
+                                </a>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <span class="badge">
+                                {{ log.get_action_display }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {% if log.details %}
+                                <details>
+                                    <summary>View Details</summary>
+                                    <pre style="max-width: 400px; overflow: auto;">{{ log.details }}</pre>
+                                </details>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+
+            {% if logs.has_other_pages %}
+                <div class="actions" style="margin-top: 20px;">
+
+                    {% if logs.has_previous %}
+                        <a
+                            class="button secondary"
+                            href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ logs.previous_page_number }}"
+                        >
+                            Previous
+                        </a>
+                    {% endif %}
+
+                    <span>
+                        Page {{ logs.number }} of {{ logs.paginator.num_pages }}
+                    </span>
+
+                    {% if logs.has_next %}
+                        <a
+                            class="button secondary"
+                            href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ logs.next_page_number }}"
+                        >
+                            Next
+                        </a>
+                    {% endif %}
+
+                </div>
+            {% endif %}
+
+        {% else %}
+            <p>No audit logs found.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+</body>
+</html>
