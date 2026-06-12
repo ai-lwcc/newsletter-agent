@@ -63,7 +63,6 @@ def campaign_preview(request, campaign_id):
 
 
 @login_required
-@ratelimit(key="user", rate="5/h", block=True)
 def send_campaign_test_email_view(request, campaign_id):
     campaign = get_object_or_404(
         Campaign,
@@ -88,7 +87,6 @@ def send_campaign_test_email_view(request, campaign_id):
             "campaign": campaign,
         },
     )
-
 
 @login_required
 def campaign_recipients(request, campaign_id):
@@ -471,7 +469,6 @@ def campaign_schedule_status(request, campaign_id):
 
 
 @login_required
-@ratelimit(key="user", rate="5/h", block=True)
 def campaign_generate_ai_draft(request, campaign_id):
     campaign = get_object_or_404(Campaign, id=campaign_id)
 
@@ -663,6 +660,13 @@ def delivery_logs(request):
 
     campaigns = Campaign.objects.all().order_by("-created_at")
 
+    query_params = request.GET.copy()
+
+    if "page" in query_params:
+        query_params.pop("page")
+
+    query_string = query_params.urlencode()
+
     return render(
         request,
         "core/delivery_logs.html",
@@ -673,5 +677,6 @@ def delivery_logs(request):
             "selected_status": status,
             "selected_channel": channel,
             "selected_campaign": campaign_id,
+            "query_string": query_string,
         },
     )

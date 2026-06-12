@@ -125,7 +125,7 @@
                     {% if logs.has_previous %}
                         <a
                             class="button secondary"
-                            href="?page={{ logs.previous_page_number }}"
+                            href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ logs.previous_page_number }}"
                         >
                             Previous
                         </a>
@@ -138,7 +138,7 @@
                     {% if logs.has_next %}
                         <a
                             class="button secondary"
-                            href="?page={{ logs.next_page_number }}"
+                            href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ logs.next_page_number }}"
                         >
                             Next
                         </a>

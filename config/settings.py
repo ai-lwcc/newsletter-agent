@@ -4,7 +4,7 @@ Django settings for config project.
 
 import os
 from pathlib import Path
-
+import sys
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -195,3 +195,4 @@ LOGGING = {
         "level": "INFO",
     },
 }
+RATELIMIT_ENABLE = "pytest" not in sys.argv
