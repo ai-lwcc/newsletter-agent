@@ -166,3 +166,32 @@ EMAIL_PROVIDER = os.getenv("EMAIL_PROVIDER", "smtp")
 
 LOGIN_URL = "/admin/login/"
 LOGIN_REDIRECT_URL = "/"
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+
+    "formatters": {
+        "standard": {
+            "format": (
+                "%(asctime)s "
+                "[%(levelname)s] "
+                "%(name)s: "
+                "%(message)s"
+            ),
+        },
+    },
+
+    "handlers": {
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": "logs/newsletter_agent.log",
+            "formatter": "standard",
+        },
+    },
+
+    "root": {
+        "handlers": ["file"],
+        "level": "INFO",
+    },
+}

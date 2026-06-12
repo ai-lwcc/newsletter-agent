@@ -1,12 +1,16 @@
+import logging
+
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django_ratelimit.decorators import ratelimit
+
 from core.attachment_cover_service import generate_attachment_cover_image
 from core.tasks import generate_campaign_ai_draft_task
-from django.core.paginator import Paginator
+
 from .campaign_send_service import (
     DailyEmailLimitExceeded,
     RealEmailSendingDisabled,
@@ -21,6 +25,9 @@ from .retry_service import retry_failed_campaign_emails
 from .schedule_status_service import get_campaign_schedule_status
 
 
+logger = logging.getLogger(__name__)
+
+
 def health_check(request):
     return JsonResponse({"status": "ok"})
 
@@ -28,7 +35,6 @@ def health_check(request):
 @login_required
 def dashboard(request):
     campaign_list = Campaign.objects.all().order_by("-created_at")
-
     paginator = Paginator(campaign_list, 10)
 
     page_number = request.GET.get("page")
@@ -66,6 +72,15 @@ def send_campaign_test_email_view(request, campaign_id):
 
     send_campaign_test_email(campaign)
 
+    logger.info(
+        "Test email sent",
+        extra={
+            "user_id": request.user.id,
+            "username": request.user.username,
+            "campaign_id": campaign.id,
+        },
+    )
+
     return render(
         request,
         "core/test_email_sent.html",
@@ -82,9 +97,7 @@ def campaign_recipients(request, campaign_id):
         id=campaign_id,
     )
 
-    recipients = get_campaign_recipients(
-        campaign
-    )
+    recipients = get_campaign_recipients(campaign)
 
     return render(
         request,
@@ -97,7 +110,6 @@ def campaign_recipients(request, campaign_id):
 
 
 @login_required
-# @permission_required("core.change_campaign", raise_exception=True)
 def campaign_dry_run(request, campaign_id):
     campaign = get_object_or_404(
         Campaign,
@@ -109,6 +121,16 @@ def campaign_dry_run(request, campaign_id):
             request,
             "Add an email subject before creating a dry run.",
         )
+
+        logger.warning(
+            "Dry run blocked: missing email subject",
+            extra={
+                "user_id": request.user.id,
+                "username": request.user.username,
+                "campaign_id": campaign.id,
+            },
+        )
+
         return redirect("campaign_preview", campaign_id=campaign.id)
 
     if not campaign.email_body:
@@ -116,6 +138,16 @@ def campaign_dry_run(request, campaign_id):
             request,
             "Add an English email body before creating a dry run.",
         )
+
+        logger.warning(
+            "Dry run blocked: missing email body",
+            extra={
+                "user_id": request.user.id,
+                "username": request.user.username,
+                "campaign_id": campaign.id,
+            },
+        )
+
         return redirect("campaign_preview", campaign_id=campaign.id)
 
     if campaign.ai_review_required:
@@ -126,6 +158,16 @@ def campaign_dry_run(request, campaign_id):
                 "before creating a dry run."
             ),
         )
+
+        logger.warning(
+            "Dry run blocked: AI review required",
+            extra={
+                "user_id": request.user.id,
+                "username": request.user.username,
+                "campaign_id": campaign.id,
+            },
+        )
+
         return redirect("campaign_preview", campaign_id=campaign.id)
 
     if not campaign.target_groups.exists():
@@ -133,6 +175,16 @@ def campaign_dry_run(request, campaign_id):
             request,
             "Select at least one target group before creating a dry run.",
         )
+
+        logger.warning(
+            "Dry run blocked: no target groups",
+            extra={
+                "user_id": request.user.id,
+                "username": request.user.username,
+                "campaign_id": campaign.id,
+            },
+        )
+
         return redirect("campaign_preview", campaign_id=campaign.id)
 
     if not campaign.attachments.exists() and not campaign.primary_attachment:
@@ -140,9 +192,31 @@ def campaign_dry_run(request, campaign_id):
             request,
             "Add at least one campaign attachment before creating a dry run.",
         )
+
+        logger.warning(
+            "Dry run blocked: no attachments",
+            extra={
+                "user_id": request.user.id,
+                "username": request.user.username,
+                "campaign_id": campaign.id,
+            },
+        )
+
         return redirect("campaign_preview", campaign_id=campaign.id)
 
     result = create_campaign_dry_run_logs(campaign)
+
+    logger.info(
+        "Dry run created",
+        extra={
+            "user_id": request.user.id,
+            "username": request.user.username,
+            "campaign_id": campaign.id,
+            "logs_created": result.get("created"),
+            "existing": result.get("existing"),
+            "recipients": result.get("recipients"),
+        },
+    )
 
     logs = DeliveryLog.objects.filter(
         campaign=campaign,
@@ -211,11 +285,30 @@ def campaign_send_real_emails(request, campaign_id):
 
     campaign = get_object_or_404(Campaign, id=campaign_id)
 
+    logger.info(
+        "Real send requested",
+        extra={
+            "user_id": request.user.id,
+            "username": request.user.username,
+            "campaign_id": campaign.id,
+        },
+    )
+
     if campaign.ai_review_required:
         messages.error(
             request,
             "Please review and accept AI suggested groups before sending.",
         )
+
+        logger.warning(
+            "Real send blocked: AI review required",
+            extra={
+                "user_id": request.user.id,
+                "username": request.user.username,
+                "campaign_id": campaign.id,
+            },
+        )
+
         return redirect("campaign_confirm_send", campaign_id=campaign.id)
 
     if not campaign.email_subject:
@@ -223,6 +316,16 @@ def campaign_send_real_emails(request, campaign_id):
             request,
             "Cannot send campaign without an email subject.",
         )
+
+        logger.warning(
+            "Real send blocked: missing email subject",
+            extra={
+                "user_id": request.user.id,
+                "username": request.user.username,
+                "campaign_id": campaign.id,
+            },
+        )
+
         return redirect("campaign_confirm_send", campaign_id=campaign.id)
 
     if not campaign.email_body:
@@ -230,6 +333,16 @@ def campaign_send_real_emails(request, campaign_id):
             request,
             "Cannot send campaign without an English email body.",
         )
+
+        logger.warning(
+            "Real send blocked: missing email body",
+            extra={
+                "user_id": request.user.id,
+                "username": request.user.username,
+                "campaign_id": campaign.id,
+            },
+        )
+
         return redirect("campaign_confirm_send", campaign_id=campaign.id)
 
     if not campaign.target_groups.exists():
@@ -237,6 +350,16 @@ def campaign_send_real_emails(request, campaign_id):
             request,
             "Cannot send campaign without at least one target group.",
         )
+
+        logger.warning(
+            "Real send blocked: no target groups",
+            extra={
+                "user_id": request.user.id,
+                "username": request.user.username,
+                "campaign_id": campaign.id,
+            },
+        )
+
         return redirect("campaign_confirm_send", campaign_id=campaign.id)
 
     if not campaign.attachments.exists() and not campaign.primary_attachment:
@@ -244,10 +367,32 @@ def campaign_send_real_emails(request, campaign_id):
             request,
             "Cannot send campaign without at least one attachment.",
         )
+
+        logger.warning(
+            "Real send blocked: no attachments",
+            extra={
+                "user_id": request.user.id,
+                "username": request.user.username,
+                "campaign_id": campaign.id,
+            },
+        )
+
         return redirect("campaign_confirm_send", campaign_id=campaign.id)
 
     try:
         result = send_pending_campaign_emails(campaign)
+
+        logger.info(
+            "Real send completed",
+            extra={
+                "user_id": request.user.id,
+                "username": request.user.username,
+                "campaign_id": campaign.id,
+                "sent": result.get("sent"),
+                "failed": result.get("failed"),
+                "remaining_pending": result.get("remaining_pending"),
+            },
+        )
 
         messages.success(
             request,
@@ -255,16 +400,35 @@ def campaign_send_real_emails(request, campaign_id):
         )
 
     except RealEmailSendingDisabled as error:
+        logger.warning(
+            "Real send blocked: real email sending disabled",
+            extra={
+                "user_id": request.user.id,
+                "username": request.user.username,
+                "campaign_id": campaign.id,
+                "error": str(error),
+            },
+        )
+
         messages.error(request, str(error))
 
     except DailyEmailLimitExceeded as error:
+        logger.warning(
+            "Real send blocked: daily limit exceeded",
+            extra={
+                "user_id": request.user.id,
+                "username": request.user.username,
+                "campaign_id": campaign.id,
+                "error": str(error),
+            },
+        )
+
         messages.error(request, str(error))
 
     return redirect("campaign_confirm_send", campaign_id=campaign.id)
 
 
 @login_required
-# @permission_required("core.change_campaign", raise_exception=True)
 def campaign_retry_failed_emails(request, campaign_id):
     if request.method != "POST":
         return redirect("campaign_confirm_send", campaign_id=campaign_id)
@@ -272,6 +436,16 @@ def campaign_retry_failed_emails(request, campaign_id):
     campaign = get_object_or_404(Campaign, id=campaign_id)
 
     result = retry_failed_campaign_emails(campaign)
+
+    logger.info(
+        "Failed emails retried",
+        extra={
+            "user_id": request.user.id,
+            "username": request.user.username,
+            "campaign_id": campaign.id,
+            "retried": result.get("retried"),
+        },
+    )
 
     messages.success(
         request,
@@ -284,7 +458,6 @@ def campaign_retry_failed_emails(request, campaign_id):
 @login_required
 def campaign_schedule_status(request, campaign_id):
     campaign = get_object_or_404(Campaign, id=campaign_id)
-
     status = get_campaign_schedule_status(campaign)
 
     return render(
@@ -299,7 +472,6 @@ def campaign_schedule_status(request, campaign_id):
 
 @login_required
 @ratelimit(key="user", rate="5/h", block=True)
-# @permission_required("core.change_campaign", raise_exception=True)
 def campaign_generate_ai_draft(request, campaign_id):
     campaign = get_object_or_404(Campaign, id=campaign_id)
 
@@ -308,11 +480,19 @@ def campaign_generate_ai_draft(request, campaign_id):
 
     generate_campaign_ai_draft_task.delay(campaign.id)
 
+    logger.info(
+        "AI draft queued",
+        extra={
+            "user_id": request.user.id,
+            "username": request.user.username,
+            "campaign_id": campaign.id,
+        },
+    )
+
     return redirect("campaign_preview", campaign_id=campaign.id)
 
 
 @login_required
-# @permission_required("core.change_campaign", raise_exception=True)
 def campaign_accept_ai_groups(request, campaign_id):
     campaign = get_object_or_404(Campaign, id=campaign_id)
 
@@ -326,12 +506,21 @@ def campaign_accept_ai_groups(request, campaign_id):
     campaign.ai_review_required = False
     campaign.save(update_fields=["ai_review_required", "updated_at"])
 
+    logger.info(
+        "AI suggested groups accepted",
+        extra={
+            "user_id": request.user.id,
+            "username": request.user.username,
+            "campaign_id": campaign.id,
+            "group_count": groups.count(),
+        },
+    )
+
     return redirect("campaign_preview", campaign_id=campaign.id)
 
 
 @login_required
 @ratelimit(key="user", rate="10/h", block=True)
-# @permission_required("core.add_campaign", raise_exception=True)
 def ai_campaign_create(request):
     if request.method == "POST":
         form = AICampaignCreateForm(
@@ -346,6 +535,14 @@ def ai_campaign_create(request):
                 messages.error(
                     request,
                     "Please upload at least one campaign file.",
+                )
+
+                logger.warning(
+                    "AI campaign create blocked: no uploaded files",
+                    extra={
+                        "user_id": request.user.id,
+                        "username": request.user.username,
+                    },
                 )
 
                 return render(
@@ -396,10 +593,30 @@ def ai_campaign_create(request):
             generate_attachment_cover_image(campaign)
             generate_campaign_ai_draft_task.delay(campaign.id)
 
+            logger.info(
+                "AI campaign created",
+                extra={
+                    "user_id": request.user.id,
+                    "username": request.user.username,
+                    "campaign_id": campaign.id,
+                    "attachment_count": len(uploaded_files),
+                    "status": campaign.status,
+                },
+            )
+
             return redirect(
                 "campaign_preview",
                 campaign_id=campaign.id,
             )
+
+        logger.warning(
+            "AI campaign create form invalid",
+            extra={
+                "user_id": request.user.id,
+                "username": request.user.username,
+                "errors": form.errors.as_json(),
+            },
+        )
 
     else:
         form = AICampaignCreateForm()

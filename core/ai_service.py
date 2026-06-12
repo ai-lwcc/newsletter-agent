@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import re
 
@@ -7,6 +8,8 @@ import ollama
 from core.document_text_service import extract_text_from_campaign_file
 from core.models import Group
 
+
+logger = logging.getLogger(__name__)
 
 AI_MODEL = os.getenv(
     "AI_MODEL",
@@ -33,11 +36,26 @@ def extract_json_from_text(text):
     match = re.search(r"\{.*\}", text, re.DOTALL)
 
     if not match:
+        logger.error(
+            "AI response did not contain JSON. Response preview: %s",
+            text[:300],
+        )
+
         raise ValueError(
             f"AI did not return JSON. Response was: {text[:500]}"
         )
 
-    return json.loads(match.group(0))
+    try:
+        return json.loads(match.group(0))
+
+    except json.JSONDecodeError as error:
+        logger.error(
+            "AI returned invalid JSON. Error: %s. Response preview: %s",
+            error,
+            text[:300],
+        )
+
+        raise
 
 
 def get_email_length_rules(email_length):
@@ -104,16 +122,39 @@ def get_file_description(campaign):
 
 def generate_campaign_ai_draft(campaign):
     if not campaign.primary_attachment:
+        logger.warning(
+            "AI draft generation blocked for campaign %s because no attachment exists.",
+            campaign.id,
+        )
+
         raise ValueError(
             "Campaign must have an attachment before generating AI draft."
         )
+
+    logger.info(
+        "AI draft generation started for campaign %s using model %s.",
+        campaign.id,
+        AI_MODEL,
+    )
 
     document_text_parts = []
 
     attachments = campaign.attachments.all()
 
     if attachments.exists():
+        logger.info(
+            "Campaign %s has %s attachment(s) for AI processing.",
+            campaign.id,
+            attachments.count(),
+        )
+
         for attachment in attachments:
+            logger.info(
+                "Extracting text from attachment %s for campaign %s.",
+                attachment.file.name,
+                campaign.id,
+            )
+
             text = extract_text_from_campaign_file(
                 attachment.file.path
             )
@@ -121,7 +162,13 @@ def generate_campaign_ai_draft(campaign):
             document_text_parts.append(
                 f"FILE: {attachment.file.name}\n{text}"
             )
+
     else:
+        logger.info(
+            "Campaign %s has no attachment rows. Falling back to primary attachment.",
+            campaign.id,
+        )
+
         text = extract_text_from_campaign_file(
             campaign.primary_attachment.path
         )
@@ -132,13 +179,17 @@ def generate_campaign_ai_draft(campaign):
 
     document_text = "\n\n---\n\n".join(document_text_parts)
 
-    print("\n========== DOCUMENT LENGTH ==========")
-    print(len(document_text))
-    print("=====================================\n")
+    logger.info(
+        "Extracted %s characters of document text for campaign %s.",
+        len(document_text),
+        campaign.id,
+    )
 
-    print("\n========== DOCUMENT PREVIEW ==========")
-    print(document_text[:1000])
-    print("======================================\n")
+    if not document_text.strip():
+        logger.warning(
+            "No document text extracted for campaign %s.",
+            campaign.id,
+        )
 
     available_groups = list(
         Group.objects.values_list("name", flat=True)
@@ -298,8 +349,17 @@ ATTACHED FILE CONTENT:
 
     content = response["message"]["content"]
 
-    print("========== RAW AI RESPONSE ==========")
-    print(content)
-    print("=====================================")
+    logger.info(
+        "AI response received for campaign %s. Response length: %s characters.",
+        campaign.id,
+        len(content),
+    )
 
-    return extract_json_from_text(content)
+    ai_result = extract_json_from_text(content)
+
+    logger.info(
+        "AI draft generation completed for campaign %s.",
+        campaign.id,
+    )
+
+    return ai_result

@@ -12,3 +12,4 @@ secrets/
 db.sqlite3
 media/
 backups/
+logs/
