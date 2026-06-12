@@ -28,6 +28,10 @@
         <a href="{% url 'dashboard' %}">← Back to Dashboard</a>
     </p>
 
+    <p>
+        <a href="{% url 'campaign_detail' campaign.id %}">← Back to Campaign Details</a>
+    </p>
+
     <div class="card header">
         <div>
             <h1>{{ campaign.title }}</h1>

@@ -122,6 +122,10 @@
     <div class="card">
         <h2>Delivery Summary</h2>
 
+        <p>
+            Current delivery status for this campaign.
+        </p>
+
         <div class="actions">
             <span class="badge">
                 Pending: {{ delivery_summary.pending }}
@@ -138,6 +142,44 @@
             <span class="badge">
                 Skipped: {{ delivery_summary.skipped }}
             </span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Quick Log Navigation</h2>
+
+        <p>
+            View delivery logs filtered for this campaign.
+        </p>
+
+        <div class="actions">
+            <a
+                class="button secondary"
+                href="{% url 'delivery_logs' %}?campaign={{ campaign.id }}&status=pending"
+            >
+                View Pending Logs
+            </a>
+
+            <a
+                class="button secondary"
+                href="{% url 'delivery_logs' %}?campaign={{ campaign.id }}&status=sent"
+            >
+                View Sent Logs
+            </a>
+
+            <a
+                class="button secondary"
+                href="{% url 'delivery_logs' %}?campaign={{ campaign.id }}&status=failed"
+            >
+                View Failed Logs
+            </a>
+
+            <a
+                class="button secondary"
+                href="{% url 'delivery_logs' %}?campaign={{ campaign.id }}&status=skipped"
+            >
+                View Skipped Logs
+            </a>
         </div>
     </div>
 
@@ -161,7 +203,7 @@
                 {% for attachment in campaign.attachments.all %}
                     <li>
                         <a href="{{ attachment.file.url }}">
-                            {{ attachment.file.name }}
+                            📄 {{ attachment.file.name|cut:"campaign_attachments/" }}
                         </a>
                     </li>
                 {% endfor %}
