@@ -263,3 +263,61 @@ class DeliveryLog(models.Model):
 
     def __str__(self):
         return f"{self.campaign.title} -> {self.person.full_name} ({self.channel})"
+    
+
+class UserActionLog(models.Model):
+    ACTION_AI_CAMPAIGN_CREATED = "ai_campaign_created"
+    ACTION_AI_DRAFT_QUEUED = "ai_draft_queued"
+    ACTION_TEST_EMAIL_SENT = "test_email_sent"
+    ACTION_DRY_RUN_CREATED = "dry_run_created"
+    ACTION_REAL_SEND_REQUESTED = "real_send_requested"
+    ACTION_FAILED_EMAILS_RETRIED = "failed_emails_retried"
+    ACTION_AI_GROUPS_ACCEPTED = "ai_groups_accepted"
+
+    ACTION_CHOICES = [
+        (ACTION_AI_CAMPAIGN_CREATED, "AI Campaign Created"),
+        (ACTION_AI_DRAFT_QUEUED, "AI Draft Queued"),
+        (ACTION_TEST_EMAIL_SENT, "Test Email Sent"),
+        (ACTION_DRY_RUN_CREATED, "Dry Run Created"),
+        (ACTION_REAL_SEND_REQUESTED, "Real Send Requested"),
+        (ACTION_FAILED_EMAILS_RETRIED, "Failed Emails Retried"),
+        (ACTION_AI_GROUPS_ACCEPTED, "AI Groups Accepted"),
+    ]
+
+    user = models.ForeignKey(
+        "auth.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
+    campaign = models.ForeignKey(
+        Campaign,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="user_action_logs",
+    )
+
+    action = models.CharField(
+        max_length=50,
+        choices=ACTION_CHOICES,
+    )
+
+    details = models.JSONField(
+        default=dict,
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user", "created_at"]),
+            models.Index(fields=["campaign", "created_at"]),
+            models.Index(fields=["action", "created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.action} by {self.user} at {self.created_at}"

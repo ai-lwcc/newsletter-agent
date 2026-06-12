@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
 
-from .models import Campaign, DeliveryLog, Group, Person, CampaignAttachment
+from .models import Campaign, DeliveryLog, Group, Person, CampaignAttachment, UserActionLog
 
 
 @admin.register(Group)
@@ -162,3 +162,34 @@ class DeliveryLogAdmin(admin.ModelAdmin):
 class CampaignAttachmentAdmin(admin.ModelAdmin):
     list_display = ("campaign", "file", "uploaded_at")
     search_fields = ("campaign__title", "file")
+
+@admin.register(UserActionLog)
+class UserActionLogAdmin(admin.ModelAdmin):
+    list_display = (
+        "created_at",
+        "user",
+        "campaign",
+        "action",
+    )
+
+    list_filter = (
+        "action",
+        "created_at",
+    )
+
+    search_fields = (
+        "user__username",
+        "campaign__title",
+        "action",
+    )
+
+    readonly_fields = (
+        "user",
+        "campaign",
+        "action",
+        "details",
+        "created_at",
+    )
+
+    ordering = ("-created_at",)
+    list_per_page = 50
