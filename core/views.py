@@ -628,3 +628,50 @@ def ai_campaign_create(request):
             "form": form,
         },
     )
+
+@login_required
+def delivery_logs(request):
+    logs = DeliveryLog.objects.select_related(
+        "campaign",
+        "person",
+    ).order_by("-created_at")
+
+    status = request.GET.get("status")
+    channel = request.GET.get("channel")
+    campaign_id = request.GET.get("campaign")
+
+    if status:
+        logs = logs.filter(status=status)
+
+    if channel:
+        logs = logs.filter(channel=channel)
+
+    if campaign_id:
+        logs = logs.filter(campaign_id=campaign_id)
+
+    paginator = Paginator(logs, 50)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    summary = {
+        "total": logs.count(),
+        "pending": logs.filter(status=DeliveryLog.STATUS_PENDING).count(),
+        "sent": logs.filter(status=DeliveryLog.STATUS_SENT).count(),
+        "failed": logs.filter(status=DeliveryLog.STATUS_FAILED).count(),
+        "skipped": logs.filter(status=DeliveryLog.STATUS_SKIPPED).count(),
+    }
+
+    campaigns = Campaign.objects.all().order_by("-created_at")
+
+    return render(
+        request,
+        "core/delivery_logs.html",
+        {
+            "logs": page_obj,
+            "summary": summary,
+            "campaigns": campaigns,
+            "selected_status": status,
+            "selected_channel": channel,
+            "selected_campaign": campaign_id,
+        },
+    )

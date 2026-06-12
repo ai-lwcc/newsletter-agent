@@ -1,0 +1,158 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delivery Logs</title>
+    <link rel="stylesheet" href="{% static 'core/styles.css' %}">
+</head>
+<body>
+
+<div class="container">
+
+    <p>
+        <a href="{% url 'dashboard' %}">
+            ← Back to Dashboard
+        </a>
+    </p>
+
+    <div class="card">
+        <h1>Delivery Logs</h1>
+        <p>
+            Review campaign delivery status, failures, and pending sends.
+        </p>
+    </div>
+
+    <div class="card">
+        <h2>Summary</h2>
+
+        <p><strong>Total:</strong> {{ summary.total }}</p>
+        <p><strong>Pending:</strong> {{ summary.pending }}</p>
+        <p><strong>Sent:</strong> {{ summary.sent }}</p>
+        <p><strong>Failed:</strong> {{ summary.failed }}</p>
+        <p><strong>Skipped:</strong> {{ summary.skipped }}</p>
+    </div>
+
+    <div class="card">
+        <h2>Filters</h2>
+
+        <form method="get" class="actions">
+
+            <select name="status">
+                <option value="">All statuses</option>
+                <option value="pending" {% if selected_status == "pending" %}selected{% endif %}>
+                    Pending
+                </option>
+                <option value="sent" {% if selected_status == "sent" %}selected{% endif %}>
+                    Sent
+                </option>
+                <option value="failed" {% if selected_status == "failed" %}selected{% endif %}>
+                    Failed
+                </option>
+                <option value="skipped" {% if selected_status == "skipped" %}selected{% endif %}>
+                    Skipped
+                </option>
+            </select>
+
+            <select name="channel">
+                <option value="">All channels</option>
+                <option value="email" {% if selected_channel == "email" %}selected{% endif %}>
+                    Email
+                </option>
+                <option value="whatsapp" {% if selected_channel == "whatsapp" %}selected{% endif %}>
+                    WhatsApp
+                </option>
+            </select>
+
+            <select name="campaign">
+                <option value="">All campaigns</option>
+                {% for campaign in campaigns %}
+                    <option
+                        value="{{ campaign.id }}"
+                        {% if selected_campaign == campaign.id|stringformat:"s" %}selected{% endif %}
+                    >
+                        {{ campaign.title }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <button class="button" type="submit">
+                Apply Filters
+            </button>
+
+            <a class="button secondary" href="{% url 'delivery_logs' %}">
+                Clear
+            </a>
+
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Logs</h2>
+
+        {% if logs %}
+            <table>
+                <tr>
+                    <th>Campaign</th>
+                    <th>Recipient</th>
+                    <th>Channel</th>
+                    <th>Status</th>
+                    <th>Sent At</th>
+                    <th>Error</th>
+                </tr>
+
+                {% for log in logs %}
+                    <tr>
+                        <td>{{ log.campaign.title }}</td>
+                        <td>{{ log.person.full_name }}</td>
+                        <td>{{ log.channel }}</td>
+                        <td>{{ log.status }}</td>
+                        <td>{{ log.sent_at|default:"Not sent" }}</td>
+                        <td>
+                            {% if log.error_message %}
+                                {{ log.error_message|truncatechars:120 }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+
+            {% if logs.has_other_pages %}
+                <div class="actions" style="margin-top: 20px;">
+
+                    {% if logs.has_previous %}
+                        <a
+                            class="button secondary"
+                            href="?page={{ logs.previous_page_number }}"
+                        >
+                            Previous
+                        </a>
+                    {% endif %}
+
+                    <span>
+                        Page {{ logs.number }} of {{ logs.paginator.num_pages }}
+                    </span>
+
+                    {% if logs.has_next %}
+                        <a
+                            class="button secondary"
+                            href="?page={{ logs.next_page_number }}"
+                        >
+                            Next
+                        </a>
+                    {% endif %}
+
+                </div>
+            {% endif %}
+
+        {% else %}
+            <p>No delivery logs found.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+</body>
+</html>
