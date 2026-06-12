@@ -120,6 +120,42 @@
     </div>
 
     <div class="card">
+        <h2>Email Preview</h2>
+
+        <p>
+            <strong>Subject:</strong>
+            {{ campaign.email_subject|default:"No subject yet" }}
+        </p>
+
+        <div class="preview-box">
+            {% if campaign.email_body %}
+                {{ campaign.email_body|linebreaks }}
+            {% else %}
+                No English email body yet.
+            {% endif %}
+        </div>
+
+        {% if campaign.email_body_zh %}
+            <h3>Traditional Chinese</h3>
+            <div class="preview-box">
+                {{ campaign.email_body_zh|linebreaks }}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h2>WhatsApp Preview</h2>
+
+        <div class="preview-box">
+            {% if campaign.whatsapp_message %}
+                {{ campaign.whatsapp_message|linebreaks }}
+            {% else %}
+                No WhatsApp message yet.
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
         <h2>Delivery Summary</h2>
 
         <p>
