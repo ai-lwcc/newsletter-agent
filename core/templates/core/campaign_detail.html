@@ -47,6 +47,92 @@
     </div>
 
     <div class="card">
+        <h2>Readiness Checklist</h2>
+
+        <div class="checklist-grid">
+
+            <div class="checklist-item">
+                <span class="check-icon">✅</span>
+                <div>
+                    <strong>Email Subject</strong>
+                    <p>{{ campaign.email_subject|default:"Missing email subject" }}</p>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <span class="check-icon">✅</span>
+                <div>
+                    <strong>English Email Body</strong>
+                    <p>
+                        {% if campaign.email_body %}
+                            Added
+                        {% else %}
+                            Missing English email body
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <span class="check-icon">✅</span>
+                <div>
+                    <strong>Traditional Chinese Body</strong>
+                    <p>
+                        {% if campaign.email_body_zh %}
+                            Added
+                        {% else %}
+                            Missing Traditional Chinese body
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <span class="check-icon">✅</span>
+                <div>
+                    <strong>Target Groups</strong>
+                    <p>
+                        {% if campaign.target_groups.exists %}
+                            Selected
+                        {% else %}
+                            No target groups selected
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <span class="check-icon">✅</span>
+                <div>
+                    <strong>Attachments</strong>
+                    <p>
+                        {% if campaign.attachments.exists or campaign.primary_attachment %}
+                            Added
+                        {% else %}
+                            No attachment added
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <span class="check-icon">✅</span>
+                <div>
+                    <strong>AI Suggestions</strong>
+                    <p>
+                        {% if not campaign.ai_review_required %}
+                            Reviewed
+                        {% else %}
+                            Review required
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="card">
         <h2>Workflow Actions</h2>
 
         <div class="actions">
