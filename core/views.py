@@ -52,6 +52,7 @@ def dashboard(request):
         "core/dashboard.html",
         {
             "campaigns": campaigns,
+            "can_view_audit_logs": is_newsletter_manager(request.user),
         },
     )
 
@@ -724,6 +725,12 @@ def delivery_logs(request):
 
 @login_required
 def audit_logs(request):
+
+    if not is_newsletter_manager(request.user):
+        return HttpResponseForbidden(
+            "You do not have permission to view audit logs."
+        )
+    
     logs = UserActionLog.objects.select_related(
         "user",
         "campaign",

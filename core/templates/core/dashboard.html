@@ -38,9 +38,11 @@
                 Delivery Logs
             </a>
 
-            <a class="button secondary" href="{% url 'audit_logs' %}">
-                Audit Logs
-            </a>
+            {% if can_view_audit_logs %}
+                <a class="button secondary" href="{% url 'audit_logs' %}">
+                    Audit Logs
+                </a>
+            {% endif %}
 
             <a class="button secondary" href="/admin/">
                 Admin Panel
