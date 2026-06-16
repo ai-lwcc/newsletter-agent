@@ -4,8 +4,17 @@ from django.urls import reverse
 from core.models import Campaign, DeliveryLog, Person
 
 
+def add_manager_role(user):
+    user.is_staff = True
+    user.is_superuser = True
+    user.save()
+
+
 @pytest.mark.django_db
-def test_delivery_logs_page_loads(authenticated_client):
+def test_delivery_logs_page_loads(authenticated_client, django_user_model):
+    user = django_user_model.objects.get(username="testuser")
+    add_manager_role(user)
+
     campaign = Campaign.objects.create(
         title="Test Campaign",
         email_subject="Test Subject",
@@ -36,7 +45,10 @@ def test_delivery_logs_page_loads(authenticated_client):
 
 
 @pytest.mark.django_db
-def test_delivery_logs_page_filters_by_status(authenticated_client):
+def test_delivery_logs_page_filters_by_status(authenticated_client, django_user_model):
+    user = django_user_model.objects.get(username="testuser")
+    add_manager_role(user)
+
     campaign = Campaign.objects.create(
         title="Test Campaign",
         email_subject="Test Subject",

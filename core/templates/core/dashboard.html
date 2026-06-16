@@ -34,9 +34,11 @@
                 Manage Groups
             </a>
 
-            <a class="button secondary" href="{% url 'delivery_logs' %}">
-                Delivery Logs
-            </a>
+            {% if can_view_delivery_logs %}
+                <a class="button secondary" href="{% url 'delivery_logs' %}">
+                    Delivery Logs
+                </a>
+            {% endif %}
 
             {% if can_view_audit_logs %}
                 <a class="button secondary" href="{% url 'audit_logs' %}">

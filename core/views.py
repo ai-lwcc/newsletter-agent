@@ -53,6 +53,7 @@ def dashboard(request):
         {
             "campaigns": campaigns,
             "can_view_audit_logs": is_newsletter_manager(request.user),
+            "can_view_delivery_logs": is_newsletter_manager(request.user),
         },
     )
 
@@ -670,6 +671,11 @@ def ai_campaign_create(request):
 
 @login_required
 def delivery_logs(request):
+    if not is_newsletter_manager(request.user):
+        return HttpResponseForbidden(
+            "You do not have permission to view delivery logs."
+        )
+    
     logs = DeliveryLog.objects.select_related(
         "campaign",
         "person",
