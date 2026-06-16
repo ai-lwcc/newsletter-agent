@@ -46,6 +46,30 @@
         </div>
     </div>
 
+    <div class="card readiness-banner {{ readiness_status }}">
+        <h2>
+            {% if readiness_status == "ready" %}
+                🟢 {{ readiness_message }}
+            {% elif readiness_status == "warning" %}
+                🟡 {{ readiness_message }}
+            {% else %}
+                🔴 {{ readiness_message }}
+            {% endif %}
+        </h2>
+
+        {% if readiness_issues %}
+            <p>This campaign has {{ readiness_issues|length }} item(s) to fix:</p>
+
+            <ul>
+                {% for issue in readiness_issues %}
+                    <li>{{ issue }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>All required items have been completed.</p>
+        {% endif %}
+    </div>
+
     <div class="card">
         <h2>Readiness Checklist</h2>
 

@@ -798,6 +798,36 @@ def campaign_detail(request, campaign_id):
         "user",
     ).order_by("-created_at")[:5]
 
+    readiness_issues = []
+
+    if not campaign.email_subject:
+        readiness_issues.append("Missing email subject")
+
+    if not campaign.email_body:
+        readiness_issues.append("Missing English email body")
+
+    if not campaign.email_body_zh:
+        readiness_issues.append("Missing Traditional Chinese email body")
+
+    if not campaign.target_groups.exists():
+        readiness_issues.append("No target groups selected")
+
+    if not campaign.attachments.exists() and not campaign.primary_attachment:
+        readiness_issues.append("No attachment added")
+
+    if campaign.ai_review_required:
+        readiness_issues.append("AI suggestions need review")
+
+    if not readiness_issues:
+        readiness_status = "ready"
+        readiness_message = "Ready to Send"
+    elif len(readiness_issues) <= 2:
+        readiness_status = "warning"
+        readiness_message = "Needs Attention"
+    else:
+        readiness_status = "not_ready"
+        readiness_message = "Not Ready"
+
     return render(
         request,
         "core/campaign_detail.html",
@@ -805,5 +835,8 @@ def campaign_detail(request, campaign_id):
             "campaign": campaign,
             "delivery_summary": delivery_summary,
             "recent_audit_logs": recent_audit_logs,
+            "readiness_issues": readiness_issues,
+            "readiness_status": readiness_status,
+            "readiness_message": readiness_message,
         },
     )
