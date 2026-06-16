@@ -54,6 +54,7 @@ def dashboard(request):
             "campaigns": campaigns,
             "can_view_audit_logs": is_newsletter_manager(request.user),
             "can_view_delivery_logs": is_newsletter_manager(request.user),
+            "can_send_campaigns": is_newsletter_manager(request.user),
         },
     )
 
@@ -236,6 +237,11 @@ def campaign_dry_run(request, campaign_id):
 
 @login_required
 def campaign_confirm_send(request, campaign_id):
+    if not is_newsletter_manager(request.user):
+        return HttpResponseForbidden(
+            "You do not have permission to confirm campaign sends."
+        )
+    
     campaign = get_object_or_404(Campaign, id=campaign_id)
 
     pending_logs = DeliveryLog.objects.filter(

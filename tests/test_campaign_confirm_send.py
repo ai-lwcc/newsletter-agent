@@ -7,9 +7,25 @@ from core.dry_run_service import create_campaign_dry_run_logs
 from core.models import Campaign, DeliveryLog, Group, Person
 
 
+def make_authenticated_user_manager(django_user_model):
+    manager_group, _ = AuthGroup.objects.get_or_create(
+        name="Newsletter Manager",
+    )
+
+    user = django_user_model.objects.get(
+        username="testuser",
+    )
+
+    user.groups.add(manager_group)
+
+    return user
+
+
 @pytest.mark.django_db
 @override_settings(SEND_REAL_EMAILS=False, MAX_EMAILS_PER_DAY=300)
-def test_confirm_send_page_loads(authenticated_client):
+def test_confirm_send_page_loads(authenticated_client, django_user_model):
+    make_authenticated_user_manager(django_user_model)
+
     group = Group.objects.create(name="Pickleball Players")
 
     campaign = Campaign.objects.create(
@@ -44,14 +60,7 @@ def test_confirm_send_page_loads(authenticated_client):
 @pytest.mark.django_db
 @override_settings(SEND_REAL_EMAILS=False, MAX_EMAILS_PER_DAY=300)
 def test_real_send_post_blocked_when_disabled(authenticated_client, django_user_model):
-    manager_group = AuthGroup.objects.create(
-        name="Newsletter Manager",
-    )
-
-    user = django_user_model.objects.get(
-        username="testuser",
-    )
-    user.groups.add(manager_group)
+    make_authenticated_user_manager(django_user_model)
 
     group = Group.objects.create(name="Pickleball Players")
 
@@ -90,7 +99,12 @@ def test_real_send_post_blocked_when_disabled(authenticated_client, django_user_
 
 @pytest.mark.django_db
 @override_settings(SEND_REAL_EMAILS=False, MAX_EMAILS_PER_DAY=300)
-def test_confirm_send_page_shows_delivery_summary(authenticated_client):
+def test_confirm_send_page_shows_delivery_summary(
+    authenticated_client,
+    django_user_model,
+):
+    make_authenticated_user_manager(django_user_model)
+
     group = Group.objects.create(name="Pickleball Players")
 
     campaign = Campaign.objects.create(

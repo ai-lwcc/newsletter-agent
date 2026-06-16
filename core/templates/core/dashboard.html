@@ -113,9 +113,11 @@
                                 Recipients
                             </a>
                             |
-                            <a href="{% url 'campaign_confirm_send' campaign.id %}">
-                                Confirm Send
-                            </a>
+                            {% if can_send_campaigns %}
+                                <a href="{% url 'campaign_confirm_send' campaign.id %}">
+                                    Confirm Send
+                                </a>
+                            {% endif %}
                             |
                             <a href="/admin/core/campaign/{{ campaign.id }}/change/">
                                 Edit
