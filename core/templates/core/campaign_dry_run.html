@@ -49,15 +49,56 @@
                 </tr>
             {% endfor %}
         </table>
+
+        {% if logs.has_other_pages %}
+            <div class="actions" style="margin-top: 20px;">
+
+                {% if logs.has_previous %}
+                    <a
+                        class="button secondary"
+                        href="?page={{ logs.previous_page_number }}"
+                    >
+                        Previous
+                    </a>
+                {% endif %}
+
+                <span>
+                    Page {{ logs.number }} of {{ logs.paginator.num_pages }}
+                </span>
+
+                {% if logs.has_next %}
+                    <a
+                        class="button secondary"
+                        href="?page={{ logs.next_page_number }}"
+                    >
+                        Next
+                    </a>
+                {% endif %}
+
+            </div>
+        {% endif %}
     </div>
 
     <div class="card">
         <div class="actions">
-            <a class="button secondary" href="{% url 'campaign_preview' campaign.id %}">
+            <a
+                class="button secondary"
+                href="{% url 'campaign_detail' campaign.id %}"
+            >
+                Back to Details
+            </a>
+
+            <a
+                class="button secondary"
+                href="{% url 'campaign_preview' campaign.id %}"
+            >
                 Back to Preview
             </a>
 
-            <a class="button" href="{% url 'campaign_confirm_send' campaign.id %}">
+            <a
+                class="button"
+                href="{% url 'campaign_confirm_send' campaign.id %}"
+            >
                 Confirm Send
             </a>
         </div>

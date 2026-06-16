@@ -222,10 +222,14 @@ def campaign_dry_run(request, campaign_id):
         },
     )
 
-    logs = DeliveryLog.objects.filter(
+    logs_queryset = DeliveryLog.objects.filter(
         campaign=campaign,
         channel=DeliveryLog.CHANNEL_EMAIL,
     ).select_related("person")
+
+    paginator = Paginator(logs_queryset, 50)
+    page_number = request.GET.get("page")
+    logs = paginator.get_page(page_number)
 
     return render(
         request,
@@ -247,11 +251,15 @@ def campaign_confirm_send(request, campaign_id):
     
     campaign = get_object_or_404(Campaign, id=campaign_id)
 
-    pending_logs = DeliveryLog.objects.filter(
+    pending_logs_queryset = DeliveryLog.objects.filter(
         campaign=campaign,
         channel=DeliveryLog.CHANNEL_EMAIL,
         status=DeliveryLog.STATUS_PENDING,
     ).select_related("person")
+
+    paginator = Paginator(pending_logs_queryset, 50)
+    page_number = request.GET.get("page")
+    pending_logs = paginator.get_page(page_number)
 
     sent_count = DeliveryLog.objects.filter(
         campaign=campaign,
