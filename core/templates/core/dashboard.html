@@ -56,6 +56,7 @@
                 <tr>
                     <th>Title</th>
                     <th>Status</th>
+                    <th>Ready?</th>
                     <th>Scheduled Time</th>
                     <th>Actions</th>
                 </tr>
@@ -69,13 +70,31 @@
                         </td>
 
                         <td>
+                            {% if campaign.readiness_status == "ready" %}
+                                <span class="status-ready">
+                                    🟢 Ready
+                                </span>
+                            {% elif campaign.readiness_status == "warning" %}
+                                <span class="status-warning">
+                                    🟡 {{ campaign.readiness_issues|length }}
+                                    Issue{{ campaign.readiness_issues|length|pluralize }}
+                                </span>
+                            {% else %}
+                                <span class="status-danger">
+                                    🔴 {{ campaign.readiness_issues|length }}
+                                    Issues
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
                             {{ campaign.scheduled_send_time|default:"Not scheduled" }}
                         </td>
 
                         <td>
                             <a href="{% url 'campaign_detail' campaign.id %}">
-                            Details
-                        </a>
+                                Details
+                            </a>
                             |
                             <a href="{% url 'campaign_recipients' campaign.id %}">
                                 Recipients
@@ -84,7 +103,7 @@
                             <a href="{% url 'campaign_confirm_send' campaign.id %}">
                                 Confirm Send
                             </a>
-                            |         
+                            |
                             <a href="/admin/core/campaign/{{ campaign.id }}/change/">
                                 Edit
                             </a>

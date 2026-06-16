@@ -162,6 +162,43 @@ class Campaign(models.Model):
 
     def __str__(self):
         return self.title
+    
+    @property
+    def readiness_issues(self):
+        issues = []
+
+        if not self.email_subject:
+            issues.append("Subject")
+
+        if not self.email_body:
+            issues.append("English Body")
+
+        if not self.email_body_zh:
+            issues.append("Chinese Body")
+
+        if not self.target_groups.exists():
+            issues.append("Groups")
+
+        if not self.attachments.exists() and not self.primary_attachment:
+            issues.append("Attachment")
+
+        if self.ai_review_required:
+            issues.append("AI Review")
+
+        return issues
+
+
+    @property
+    def readiness_status(self):
+        issues = self.readiness_issues
+
+        if not issues:
+            return "ready"
+
+        if len(issues) <= 2:
+            return "warning"
+
+        return "not_ready"
 
 
 class CampaignAttachment(models.Model):
