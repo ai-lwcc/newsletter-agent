@@ -26,13 +26,17 @@
                 Create Campaign
             </a>
 
-            <a class="button secondary" href="/admin/core/person/">
-                Manage Contacts
-            </a>
+            {% if can_manage_contacts %}
+                <a class="button secondary" href="/admin/core/person/">
+                    Manage Contacts
+                </a>
+            {% endif %}
 
-            <a class="button secondary" href="/admin/core/group/">
-                Manage Groups
-            </a>
+            {% if can_manage_groups %}
+                <a class="button secondary" href="/admin/core/group/">
+                    Manage Groups
+                </a>
+            {% endif %}
 
             {% if can_view_delivery_logs %}
                 <a class="button secondary" href="{% url 'delivery_logs' %}">
@@ -46,9 +50,11 @@
                 </a>
             {% endif %}
 
-            <a class="button secondary" href="/admin/">
-                Admin Panel
-            </a>
+            {% if can_access_admin %}
+                <a class="button secondary" href="/admin/">
+                    Admin Panel
+                </a>
+            {% endif %}
         </div>
     </div>
 

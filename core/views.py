@@ -55,6 +55,9 @@ def dashboard(request):
             "can_view_audit_logs": is_newsletter_manager(request.user),
             "can_view_delivery_logs": is_newsletter_manager(request.user),
             "can_send_campaigns": is_newsletter_manager(request.user),
+            "can_manage_contacts": is_newsletter_manager(request.user),
+            "can_manage_groups": is_newsletter_manager(request.user),
+            "can_access_admin": request.user.is_staff,
         },
     )
 
