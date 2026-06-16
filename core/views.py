@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 
 from core.attachment_cover_service import generate_attachment_cover_image
@@ -12,6 +12,7 @@ from core.audit_service import create_user_action_log
 from core.rate_limit_helpers import safe_ratelimit
 from core.tasks import generate_campaign_ai_draft_task
 from core.recipient_service import get_campaign_recipients
+from core.permissions import is_newsletter_manager
 from .campaign_send_service import (
     DailyEmailLimitExceeded,
     RealEmailSendingDisabled,
@@ -270,6 +271,7 @@ def campaign_confirm_send(request, campaign_id):
             "sent_count": sent_count,
             "failed_count": failed_count,
             "skipped_count": skipped_count,
+            "can_send_campaigns": is_newsletter_manager(request.user),
         },
     )
 
@@ -281,6 +283,20 @@ def campaign_send_real_emails(request, campaign_id):
         return redirect("campaign_confirm_send", campaign_id=campaign_id)
 
     campaign = get_object_or_404(Campaign, id=campaign_id)
+
+    if not is_newsletter_manager(request.user):
+        logger.warning(
+            "Real send blocked: insufficient permission",
+            extra={
+                "user_id": request.user.id,
+                "username": request.user.username,
+                "campaign_id": campaign.id,
+            },
+        )
+
+        return HttpResponseForbidden(
+            "You do not have permission to send campaigns."
+        )
 
     logger.info(
         "Real send requested",
@@ -843,5 +859,6 @@ def campaign_detail(request, campaign_id):
             "readiness_issues": readiness_issues,
             "readiness_status": readiness_status,
             "readiness_message": readiness_message,
+            "can_send_campaigns": is_newsletter_manager(request.user),
         },
     )

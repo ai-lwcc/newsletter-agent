@@ -1,4 +1,5 @@
 import pytest
+from django.contrib.auth.models import Group as AuthGroup
 from django.test import override_settings
 from django.urls import reverse
 
@@ -42,7 +43,16 @@ def test_confirm_send_page_loads(authenticated_client):
 
 @pytest.mark.django_db
 @override_settings(SEND_REAL_EMAILS=False, MAX_EMAILS_PER_DAY=300)
-def test_real_send_post_blocked_when_disabled(authenticated_client):
+def test_real_send_post_blocked_when_disabled(authenticated_client, django_user_model):
+    manager_group = AuthGroup.objects.create(
+        name="Newsletter Manager",
+    )
+
+    user = django_user_model.objects.get(
+        username="testuser",
+    )
+    user.groups.add(manager_group)
+
     group = Group.objects.create(name="Pickleball Players")
 
     campaign = Campaign.objects.create(
@@ -77,6 +87,7 @@ def test_real_send_post_blocked_when_disabled(authenticated_client):
 
     assert log.status == DeliveryLog.STATUS_PENDING
 
+
 @pytest.mark.django_db
 @override_settings(SEND_REAL_EMAILS=False, MAX_EMAILS_PER_DAY=300)
 def test_confirm_send_page_shows_delivery_summary(authenticated_client):
@@ -98,7 +109,10 @@ def test_confirm_send_page_shows_delivery_summary(authenticated_client):
 
     create_campaign_dry_run_logs(campaign)
 
-    log = DeliveryLog.objects.get(campaign=campaign, person=person)
+    log = DeliveryLog.objects.get(
+        campaign=campaign,
+        person=person,
+    )
     log.mark_failed("Example failure")
 
     url = reverse(

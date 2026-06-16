@@ -224,12 +224,14 @@
                 Create Dry Run
             </a>
 
-            <a
-                class="button"
-                href="{% url 'campaign_confirm_send' campaign.id %}"
-            >
-                Confirm Send
-            </a>
+            {% if can_send_campaigns %}
+                <a
+                    class="button"
+                    href="{% url 'campaign_confirm_send' campaign.id %}"
+                >
+                    Confirm Send
+                </a>
+            {% endif %}
 
             <a
                 class="button secondary"
