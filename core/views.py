@@ -11,7 +11,7 @@ from core.attachment_cover_service import generate_attachment_cover_image
 from core.audit_service import create_user_action_log
 from core.rate_limit_helpers import safe_ratelimit
 from core.tasks import generate_campaign_ai_draft_task
-
+from core.recipient_service import get_campaign_recipients
 from .campaign_send_service import (
     DailyEmailLimitExceeded,
     RealEmailSendingDisabled,
@@ -40,6 +40,11 @@ def dashboard(request):
 
     page_number = request.GET.get("page")
     campaigns = paginator.get_page(page_number)
+
+    for campaign in campaigns:
+        campaign.recipient_count = len(
+            get_campaign_recipients(campaign)
+        )
 
     return render(
         request,
