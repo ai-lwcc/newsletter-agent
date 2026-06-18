@@ -1,4 +1,5 @@
 import logging
+import time
 
 from django.conf import settings
 from django.utils import timezone
@@ -88,6 +89,18 @@ def send_pending_campaign_emails(campaign):
     sent_count = 0
     failed_count = 0
 
+    send_delay_seconds = getattr(
+        settings,
+        "EMAIL_SEND_DELAY_SECONDS",
+        0,
+    )
+
+    logger.info(
+        "Email send delay configured campaign_id=%s delay_seconds=%s",
+        campaign.id,
+        send_delay_seconds,
+    )
+
     for log in pending_logs:
         try:
             provider.send_campaign_email(
@@ -107,6 +120,18 @@ def send_pending_campaign_emails(campaign):
                 log.id,
                 log.person_id,
             )
+
+            if send_delay_seconds > 0:
+                logger.info(
+                    (
+                        "Waiting before next email campaign_id=%s "
+                        "delay_seconds=%s"
+                    ),
+                    campaign.id,
+                    send_delay_seconds,
+                )
+
+                time.sleep(send_delay_seconds)
 
         except Exception as error:
             log.mark_failed(str(error))

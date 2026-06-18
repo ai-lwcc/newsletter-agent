@@ -93,13 +93,44 @@
         {% if logs %}
             <table>
                 <tr>
-                    <th>Campaign</th>
-                    <th>Recipient</th>
-                    <th>Channel</th>
-                    <th>Status</th>
-                    <th>Sent At</th>
-                    <th>Error</th>
-                </tr>
+    <th>
+        <a href="?sort=campaign&direction={% if current_sort == 'campaign' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
+            Campaign
+        </a>
+    </th>
+
+    <th>
+        <a href="?sort=recipient&direction={% if current_sort == 'recipient' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
+            Recipient
+        </a>
+    </th>
+
+    <th>
+        <a href="?sort=channel&direction={% if current_sort == 'channel' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
+            Channel
+        </a>
+    </th>
+
+    <th>
+        <a href="?sort=status&direction={% if current_sort == 'status' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
+            Status
+        </a>
+    </th>
+
+    <th>
+        <a href="?sort=sent_at&direction={% if current_sort == 'sent_at' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
+            Sent At
+        </a>
+    </th>
+
+    <th>
+        <a href="?sort=created_at&direction={% if current_sort == 'created_at' and current_direction == 'asc' %}desc{% else %}asc{% endif %}">
+            Created At
+        </a>
+    </th>
+
+    <th>Error</th>
+</tr>
 
                 {% for log in logs %}
                     <tr>
@@ -108,6 +139,9 @@
                         <td>{{ log.channel }}</td>
                         <td>{{ log.status }}</td>
                         <td>{{ log.sent_at|default:"Not sent" }}</td>
+                        <td>
+                            {{ log.created_at|default:"—" }}
+                        </td>
                         <td>
                             {% if log.error_message %}
                                 {{ log.error_message|truncatechars:120 }}
