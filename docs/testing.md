@@ -79,5 +79,24 @@ Before merging any feature:
 * New functionality must include integration tests.
 * Existing tests must remain green.
 
-```
-```
+## Covered Areas
+
+AI generation
+AI parsing
+Campaign creation
+Campaign scheduling
+Campaign models
+Recipient selection
+Delivery logs
+Audit logs
+Dry runs
+Test email sending
+Retry failed emails
+Dashboard
+Health endpoint
+Import commands
+
+## Test Utilities
+
+seed_fake_contacts
+delete_test_contacts

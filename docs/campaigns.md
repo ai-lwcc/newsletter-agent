@@ -81,3 +81,25 @@ Dry-run URL:
 
 ```txt
 /campaigns/<campaign_id>/dry-run/
+```
+
+## Campaign Detail Page
+
+Displays:
+
+- Readiness status
+- Delivery summary
+- AI status
+- Target groups
+- Attachments
+- Recent audit activity
+
+## Full Preview
+
+Displays:
+
+- Subject
+- English email
+- Chinese email
+- WhatsApp message
+- Cover image

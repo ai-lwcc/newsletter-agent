@@ -6,76 +6,245 @@ From the dashboard, click **Create AI Campaign**.
 
 Fill in:
 
-- Campaign title
-- Campaign files
-- Cover image link URL, if needed
-- AI writing settings
-- Scheduling settings, if needed
+* Campaign title
+* Campaign files
+* Cover image link URL (optional)
+* AI writing settings
+* Scheduling settings (optional)
 
 Supported files:
 
-- PDF
-- PNG
-- JPG / JPEG
-- WEBP
+* PDF
+* PNG
+* JPG / JPEG
+* WEBP
+
+---
 
 ## 2. Review AI Draft
 
-After upload, the system will generate:
+After upload, the AI will generate:
 
-- Email subject
-- English email body
-- Traditional Chinese email body
-- WhatsApp message
-- Suggested groups
-- Internal summary
+* Email subject
+* English email body
+* Traditional Chinese email body
+* WhatsApp message draft
+* Suggested recipient groups
+* Internal summary
 
-Review all AI-generated content before continuing.
+Review all generated content carefully.
 
-## 3. Accept Suggested Groups
+Recommended checks:
 
-If the suggested groups are correct, click **Accept AI Suggested Groups**.
+* Subject line is accurate
+* English content is complete
+* Traditional Chinese translation is accurate
+* Attachments match campaign content
+* Suggested groups are appropriate
 
-If they are not correct, edit the campaign manually in admin.
+---
 
-## 4. Send Test Email
+## 3. Review Campaign Detail Page
 
-Click **Send Test Email** before creating a dry run.
+Open the campaign detail page.
 
-Check:
+Review:
 
-- Cover image appears
-- Cover image link opens correctly
-- English message looks correct
-- Chinese message looks correct
-- All attachments are included
+* Campaign status
+* AI status
+* Target groups
+* Attachments
+* Delivery summary
+* Recent audit activity
 
-## 5. Create Dry Run
+Check the **Readiness Checklist**.
+
+The campaign should show:
+
+* Email subject added
+* English email body added
+* Traditional Chinese email body added
+* Target groups selected
+* Attachments added
+* AI suggestions reviewed
+
+---
+
+## 4. Accept Suggested Groups
+
+If the suggested groups are correct, click:
+
+**Accept AI Suggested Groups**
+
+If they are not correct:
+
+* Edit groups manually
+* Add or remove groups as needed
+
+The readiness checklist will remain incomplete until AI groups are reviewed.
+
+---
+
+## 5. Review Full Preview
+
+Click **Full Preview**.
+
+Verify:
+
+* Email subject
+* English content
+* Traditional Chinese content
+* WhatsApp draft
+* Cover image
+* Cover image link
+* Attachments
+
+---
+
+## 6. Send Test Email
+
+Click **Send Test Email**.
+
+Verify:
+
+* Cover image displays correctly
+* Cover image link opens correctly
+* English content renders correctly
+* Chinese content renders correctly
+* Attachments are included
+* Formatting is correct on desktop and mobile
+
+---
+
+## 7. Create Dry Run
 
 Click **Create Dry Run**.
 
-The system will block dry run if:
+The system will create delivery log entries without sending emails.
 
-- Email subject is missing
-- English email body is missing
-- AI groups have not been reviewed
-- No target groups are selected
-- No attachments are added
+Dry run is blocked if:
 
-## 6. Confirm Send
+* Email subject is missing
+* English email body is missing
+* AI groups have not been reviewed
+* No target groups are selected
+* No attachments are added
 
-Only confirm send after reviewing:
+Review:
 
-- Recipients
-- Attachments
-- Email content
-- Test email
+* Recipient count
+* Recipient list
+* Delivery logs
 
-## 7. Scheduled Campaigns
+---
+
+## 8. Review Recipients
+
+Open **View Recipients**.
+
+Verify:
+
+* Correct groups were selected
+* Expected contacts appear
+* No unexpected contacts are included
+* Recipient count matches expectations
+
+---
+
+## 9. Confirm Send
+
+Open **Confirm Send**.
+
+Review:
+
+* Recipient count
+* Pending delivery logs
+* Attachments
+* Campaign content
+* Test email results
+
+Only proceed when all information has been verified.
+
+---
+
+## 10. Send Campaign
+
+Click **Confirm Send**.
+
+The system will:
+
+* Check permissions
+* Validate campaign requirements
+* Check daily send limits
+* Send pending emails
+* Update delivery logs
+* Record audit events
+
+---
+
+## 11. Review Delivery Logs
+
+Open **Delivery Logs**.
+
+Review:
+
+* Sent emails
+* Failed emails
+* Pending emails
+* Skipped emails
+
+Available tools:
+
+* Filtering
+* Pagination
+* Sorting
+* Error review
+
+---
+
+## 12. Review Audit Logs
+
+Open **Audit Logs**.
+
+Audit logs record:
+
+* AI campaign creation
+* AI draft generation
+* AI group acceptance
+* Test email sends
+* Dry runs
+* Real send requests
+* Failed email retries
+
+Use audit logs to verify campaign history and staff actions.
+
+---
+
+## 13. Scheduled Campaigns
 
 If auto-send is enabled, the campaign will only send when:
 
-- Scheduled time has arrived
-- Auto-send is enabled
-- Pending delivery logs exist
-- Campaign passes send validation
+* Scheduled time has arrived
+* Auto-send is enabled
+* Pending delivery logs exist
+* Campaign passes send validation
+
+Scheduled campaigns follow the same validation rules as manual sends.
+
+---
+
+## WhatsApp Workflow
+
+Current status:
+
+* WhatsApp draft generation is supported
+* Real WhatsApp sending is not implemented
+
+Recommended workflow:
+
+1. Generate WhatsApp message
+2. Review content
+3. Generate recipient list
+4. Staff manually sends message through WhatsApp
+
+This keeps WhatsApp communication separate from email delivery.

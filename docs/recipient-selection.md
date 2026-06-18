@@ -13,3 +13,14 @@ Duplicate people are removed automatically.
 Current phase only previews recipients.
 
 No real emails are sent.
+
+## Recipient Resolution
+
+Recipients are selected by:
+
+Campaign
+→ Target Groups
+→ Active Contacts
+→ Email Consent = True
+
+Duplicates removed automatically.

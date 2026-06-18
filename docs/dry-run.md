@@ -22,3 +22,13 @@ A person must:
 ## Important
 
 No real emails are sent during dry run.
+
+## Dry Run Validation
+
+A dry run cannot be created unless:
+
+- Subject exists
+- English body exists
+- Target groups selected
+- Attachment uploaded
+- AI review completed

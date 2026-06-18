@@ -28,3 +28,21 @@ Failed email delivery logs can be moved back to pending.
 This does not send emails immediately.
 
 It only prepares them to be retried by the normal send process.
+
+## Current Safety Controls
+
+AI Review Required
+
+Dry Run Required
+
+Rate Limits:
+5 requests per hour
+
+Daily Send Limit:
+MAX_EMAILS_PER_DAY
+
+Permission Checks:
+Newsletter Managers only
+
+Test Email Workflow:
+Recommended before every send

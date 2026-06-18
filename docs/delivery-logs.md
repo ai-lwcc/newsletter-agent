@@ -1,36 +1,76 @@
 # Delivery Logs
 
-## Purpose
+Delivery Logs track all email delivery activity.
 
-Delivery logs record every planned or attempted campaign send.
+## Status Types
 
-They are required before real email or WhatsApp sending is enabled.
+### Pending
 
-## Fields
+Email prepared but not yet sent.
 
-- campaign
-- person
-- channel
-- status
-- error_message
-- sent_at
-- created_at
-- updated_at
+### Sent
 
-## Status Values
+Email successfully delivered to SMTP provider.
 
-- pending
-- sent
-- failed
-- skipped
+### Failed
 
-## Channels
+Email delivery failed.
 
-- email
-- whatsapp
+### Skipped
 
-## Safety Rule
+Email intentionally skipped.
 
-Creating delivery logs does not send real messages.
+## Log Information
 
-Dry runs only create pending logs.
+Each log contains:
+
+- Campaign
+- Recipient
+- Channel
+- Status
+- Sent At
+- Created At
+- Error Message
+
+## Filtering
+
+Delivery logs can be filtered by:
+
+- Campaign
+- Channel
+- Status
+
+## Sorting
+
+Columns support sorting:
+
+- Campaign
+- Recipient
+- Channel
+- Status
+- Sent At
+- Created At
+
+## Pagination
+
+Results are paginated.
+
+## Summary Dashboard
+
+Displays:
+
+- Total
+- Pending
+- Sent
+- Failed
+- Skipped
+
+## Typical Flow
+
+Create Dry Run
+    ↓
+Pending Logs Created
+    ↓
+Real Send Requested
+    ↓
+Sent / Failed Updates

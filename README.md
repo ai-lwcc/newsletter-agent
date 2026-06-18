@@ -149,6 +149,33 @@ celery -A config beat -l info
 * AI-generated content must be reviewed before sending
 * Staff should always send a test email first
 
+## Additional Features
+
+### Campaign Management
+- Campaign detail page
+- Full campaign preview page
+- Readiness checklist
+- Delivery summary dashboard
+- Recent audit activity panel
+
+### Logging & Auditing
+- Delivery log dashboard
+- Audit log dashboard
+- Filtering
+- Pagination
+- Sortable delivery log columns
+
+### Testing Utilities
+- Generate hundreds of fake recipients
+- Bulk delete test recipients
+- Local email testing support
+
+### Security
+- User action audit trail
+- Rate limiting
+- Permission checks
+- Daily email send limits
+
 ## WhatsApp Sending Status
 
 WhatsApp message generation exists, but real WhatsApp sending is not implemented yet.
