@@ -8,7 +8,6 @@ import ollama
 from core.document_text_service import extract_text_from_campaign_file
 from core.models import Group
 
-
 logger = logging.getLogger(__name__)
 
 AI_MODEL = os.getenv(
@@ -18,10 +17,6 @@ AI_MODEL = os.getenv(
 
 
 def extract_json_from_text(text):
-    """
-    Extract JSON even if the model wraps it in markdown or explanation text.
-    """
-
     text = text.strip()
 
     if text.startswith("```json"):
@@ -36,47 +31,65 @@ def extract_json_from_text(text):
     match = re.search(r"\{.*\}", text, re.DOTALL)
 
     if not match:
-        logger.error(
-            "AI response did not contain JSON. Response preview: %s",
-            text[:300],
-        )
+        raise ValueError(f"AI did not return JSON. Response was: {text[:500]}")
 
+    return json.loads(match.group(0))
+
+
+def contains_chinese_characters(text):
+    return bool(re.search(r"[\u4e00-\u9fff]", text or ""))
+
+
+def validate_ai_result(ai_result):
+    required_fields = [
+        "email_subject",
+        "email_body",
+        "email_body_zh",
+        "whatsapp_message",
+        "suggested_groups",
+        "summary",
+    ]
+
+    for field in required_fields:
+        if field not in ai_result:
+            raise ValueError(f"AI result missing required field: {field}")
+
+    if contains_chinese_characters(ai_result.get("email_body", "")):
         raise ValueError(
-            f"AI did not return JSON. Response was: {text[:500]}"
+            "AI generated Chinese text inside email_body. "
+            "email_body must be English only."
         )
 
-    try:
-        return json.loads(match.group(0))
-
-    except json.JSONDecodeError as error:
-        logger.error(
-            "AI returned invalid JSON. Error: %s. Response preview: %s",
-            error,
-            text[:300],
+    if not contains_chinese_characters(ai_result.get("email_body_zh", "")):
+        raise ValueError(
+            "AI did not generate Traditional Chinese text in email_body_zh."
         )
 
-        raise
+    if not isinstance(ai_result.get("suggested_groups"), list):
+        ai_result["suggested_groups"] = []
+
+    return ai_result
 
 
 def get_email_length_rules(email_length):
     if email_length == "medium":
         return (
             "Write a medium-length email. "
-            "Use 3 to 5 short paragraphs. "
-            "Include 2 to 4 key highlights from the attached file(s)."
+            "Use 3 to 4 short paragraphs for the English body. "
+            "Include 2 to 4 key highlights from the uploaded file."
         )
 
     if email_length == "long":
         return (
             "Write a longer newsletter-style email. "
-            "Use 5 to 7 short paragraphs. "
-            "Include several key highlights, but still do not replace the attached file(s)."
+            "Use 4 to 6 short paragraphs for the English body. "
+            "Include several key highlights, but do not replace the attachment."
         )
 
     return (
         "Write a short accompanying email. "
-        "Use 2 to 4 short paragraphs only. "
-        "Include only 1 to 3 key highlights from the attached file(s)."
+        "Use 2 short paragraphs for the English body. "
+        "Include only 1 to 3 key highlights from the uploaded file."
     )
 
 
@@ -105,91 +118,54 @@ def get_tone_rules(tone):
     )
 
 
-def get_file_description(campaign):
-    if not campaign.primary_attachment:
-        return "attached file"
-
-    filename = campaign.primary_attachment.name.lower()
-
-    if filename.endswith(".pdf"):
-        return "attached PDF"
-
-    if filename.endswith((".png", ".jpg", ".jpeg", ".webp")):
-        return "attached image, flyer, or poster"
-
-    return "attached file"
-
-
-def generate_campaign_ai_draft(campaign):
-    if not campaign.primary_attachment:
-        logger.warning(
-            "AI draft generation blocked for campaign %s because no attachment exists.",
-            campaign.id,
-        )
-
-        raise ValueError(
-            "Campaign must have an attachment before generating AI draft."
-        )
-
-    logger.info(
-        "AI draft generation started for campaign %s using model %s.",
-        campaign.id,
-        AI_MODEL,
-    )
-
-    document_text_parts = []
+def get_campaign_document_text(campaign):
+    text_parts = []
 
     attachments = campaign.attachments.all()
 
     if attachments.exists():
-        logger.info(
-            "Campaign %s has %s attachment(s) for AI processing.",
-            campaign.id,
-            attachments.count(),
+        for attachment in attachments:
+            extracted_text = extract_text_from_campaign_file(
+                attachment.file.path,
+            )
+
+            text_parts.append(
+                f"FILE: {attachment.file.name}\n{extracted_text}"
+            )
+
+    elif campaign.primary_attachment:
+        extracted_text = extract_text_from_campaign_file(
+            campaign.primary_attachment.path,
         )
 
-        for attachment in attachments:
-            logger.info(
-                "Extracting text from attachment %s for campaign %s.",
-                attachment.file.name,
-                campaign.id,
-            )
-
-            text = extract_text_from_campaign_file(
-                attachment.file.path
-            )
-
-            document_text_parts.append(
-                f"FILE: {attachment.file.name}\n{text}"
-            )
+        text_parts.append(
+            f"FILE: {campaign.primary_attachment.name}\n{extracted_text}"
+        )
 
     else:
-        logger.info(
-            "Campaign %s has no attachment rows. Falling back to primary attachment.",
-            campaign.id,
+        raise ValueError(
+            "Campaign must have at least one attachment before generating AI draft."
         )
 
-        text = extract_text_from_campaign_file(
-            campaign.primary_attachment.path
+    document_text = "\n\n---\n\n".join(text_parts).strip()
+
+    if not document_text:
+        raise ValueError(
+            "No readable text could be extracted from the campaign attachment."
         )
 
-        document_text_parts.append(
-            f"FILE: {campaign.primary_attachment.name}\n{text}"
-        )
+    return document_text
 
-    document_text = "\n\n---\n\n".join(document_text_parts)
+
+def generate_campaign_ai_draft(campaign):
+    document_text = get_campaign_document_text(campaign)
 
     logger.info(
-        "Extracted %s characters of document text for campaign %s.",
-        len(document_text),
+        "Generating AI draft for campaign_id=%s document_length=%s model=%s",
         campaign.id,
+        len(document_text),
+        AI_MODEL,
     )
-
-    if not document_text.strip():
-        logger.warning(
-            "No document text extracted for campaign %s.",
-            campaign.id,
-        )
 
     available_groups = list(
         Group.objects.values_list("name", flat=True)
@@ -197,7 +173,6 @@ def generate_campaign_ai_draft(campaign):
 
     email_length = getattr(campaign, "email_length", "short")
     tone = getattr(campaign, "tone", "professional")
-    file_description = get_file_description(campaign)
 
     email_length_rules = get_email_length_rules(email_length)
     tone_rules = get_tone_rules(tone)
@@ -205,22 +180,9 @@ def generate_campaign_ai_draft(campaign):
     prompt = f"""
 You are an experienced nonprofit communications assistant.
 
-Your job is NOT to summarize the entire attached file or files in detail.
+Your job is to write an accompanying campaign email for the uploaded file.
 
-Your job is to write an email message that will be sent together with the attached file or files.
-
-The attached file(s) will be included in the email, so the email body should introduce the attachment(s) and encourage the reader to open them.
-
-The attached file(s) may be:
-- a PDF report
-- a poster
-- a flyer
-- a PNG image
-- a JPG/JPEG image
-- a WEBP image
-- an event announcement
-- a community update
-- a program brochure
+The uploaded file will be attached to the email, so the email should introduce the attachment and encourage the reader to open it.
 
 Return ONLY valid JSON.
 
@@ -263,62 +225,74 @@ WRITING RULES:
 1. email_subject:
    - Short and professional.
    - Maximum 12 words.
-   - Match the attached file's purpose, such as annual report, event poster, flyer, program update, or announcement.
+   - Match the campaign content.
+   - Do not include "Dear Supporters" in the subject.
 
 2. email_body:
-   - This email is only an accompanying message for the attached file(s).
-   - Do not restate the whole attached file(s).
-   - Mention that the full file(s) is attached.
-   - Include only 1 to 3 key highlights from the attached file(s).
-   - If the file is an event poster or flyer, include the event name, date, time, location, and call to action when available.
-   - If the file is a report, include a short overview and invite readers to review the attachment.
-   - End with: Living Water Counselling Centre
+   - MUST be written in English only.
+   - Do not use Chinese characters in email_body.
+   - Start exactly with: Dear Supporters,
+   - This is the English email body.
+   - This email is only an accompanying message for the attached file.
+   - Do not restate the whole file.
+   - Mention that the full file/report is attached.
+   - Include only 1 to 3 key highlights from the uploaded file.
+   - Do not include the Chinese translation inside email_body.
+   - Do not end with the organization name.
 
-3. Length rules:
-   - If EMAIL LENGTH is short: write 2 short paragraphs.
-   - If EMAIL LENGTH is medium: write 3 to 4 short paragraphs.
-   - If EMAIL LENGTH is long: write 4 to 6 paragraphs.
+3. email_body_zh:
+   - MUST be written in Traditional Chinese only.
+   - This is the Traditional Chinese translation/version of email_body.
+   - Use Traditional Chinese, not Simplified Chinese.
+   - Make it natural for a Hong Kong / Cantonese-speaking nonprofit audience.
+   - Keep the same meaning and tone as the English email body.
+   - Do not copy the English text.
+   - Do not use corrupted, garbled, or nonsensical Chinese.
+   - Do not end with the organization name.
 
-4. Tone rules:
-   - professional: clear, polished, organizational.
-   - warm: friendly, welcoming, and encouraging.
-   - donor: emphasize gratitude, impact, and support.
-   - church: emphasize community, partnership, care, and service.
+4. Final email format:
+   The final displayed email should follow this structure:
+
+   Email Subject
+
+   Dear Supporters,
+
+   English Email Body
+
+   Chinese Email Body
+
+   Living Waters Counselling Centre
+
+   Therefore:
+   - email_subject should contain only the subject.
+   - email_body should contain the English section only.
+   - email_body_zh should contain the Chinese section only.
+   - The final signature should be handled by the email template or preview template.
 
 5. whatsapp_message:
    - Maximum 500 characters.
-   - Short message telling people the attached file/report/newsletter/poster/flyer is available by email.
-   - If it is an event, include the most important event detail if available.
+   - Short message telling people the file/report/newsletter is attached or available by email.
+   - Write in English unless the uploaded file clearly requires Chinese.
+   - Do not include excessive detail.
 
 6. summary:
    - Internal summary only.
    - Maximum 3 sentences.
-   - Describe what the attached file(s) is about.
 
 7. suggested_groups:
    - Choose only from AVAILABLE GROUPS.
    - Never invent group names.
-   - Choose groups based on the attached file's audience and purpose.
-
-8. email_body_zh:
-   - Write a professional Traditional Chinese version of the email.
-   - Use Traditional Chinese characters only.
-   - Never use Simplified Chinese characters.
-   - The Chinese version should sound natural to Cantonese-speaking and Traditional Chinese readers.
-   - Do not perform a word-for-word translation.
-   - Rewrite the message naturally while preserving the meaning, tone, and intent.
-   - Use nonprofit and community-oriented language appropriate for Living Water Counselling Centre.
-   - Use complete, grammatically correct Traditional Chinese sentences.
-   - Do not output transliterations, mixed languages, corrupted characters, or placeholder text.
-   - The Chinese version should be similar in length to the English version.
 
 IMPORTANT:
-The email should sound like it is accompanying an attachment, not replacing the attachment.
-If generating Chinese text, output fluent Traditional Chinese suitable for Hong Kong and Chinese communities in Canada.
+The English body and Chinese body must be separate.
+email_body must be English only.
+email_body_zh must be Traditional Chinese only.
+Never put Chinese inside email_body.
+Never put English paragraphs inside email_body_zh except unavoidable names like Living Waters Counselling Centre.
 Never output Simplified Chinese.
-Never output garbled, corrupted, or nonsensical Chinese text.
+Never output garbled, corrupted, or nonsensical Chinese.
 
-ATTACHED FILE CONTENT:
+UPLOADED FILE CONTENT:
 {document_text[:6000]}
 """
 
@@ -330,9 +304,10 @@ ATTACHED FILE CONTENT:
                 "content": (
                     "You are a JSON API. "
                     "You must always return one valid JSON object only. "
+                    "email_body must be English only. "
+                    "email_body_zh must be Traditional Chinese only. "
                     "Do not return markdown. "
-                    "Do not return explanation text. "
-                    "All JSON string fields must contain useful content."
+                    "Do not return explanation text."
                 ),
             },
             {
@@ -350,16 +325,12 @@ ATTACHED FILE CONTENT:
     content = response["message"]["content"]
 
     logger.info(
-        "AI response received for campaign %s. Response length: %s characters.",
+        "Raw AI response received for campaign_id=%s response_length=%s",
         campaign.id,
         len(content),
     )
 
     ai_result = extract_json_from_text(content)
-
-    logger.info(
-        "AI draft generation completed for campaign %s.",
-        campaign.id,
-    )
+    ai_result = validate_ai_result(ai_result)
 
     return ai_result
