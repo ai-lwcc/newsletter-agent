@@ -16,14 +16,55 @@ class Group(models.Model):
 
 class Person(models.Model):
     full_name = models.CharField(max_length=150)
+
+    first_name = models.CharField(max_length=100, blank=True)
+    last_name = models.CharField(max_length=100, blank=True)
+
     email = models.EmailField(blank=True)
+
+    phone_number = models.CharField(max_length=30, blank=True)
     whatsapp_number = models.CharField(max_length=30, blank=True)
+
+    age = models.CharField(max_length=20, blank=True)
+    address = models.TextField(blank=True)
+
+    church_organization = models.CharField(
+        max_length=255,
+        blank=True,
+    )
+
+    emergency_contact = models.CharField(
+        max_length=150,
+        blank=True,
+    )
+
+    emergency_contact_phone = models.CharField(
+        max_length=30,
+        blank=True,
+    )
+
+    referrer = models.CharField(
+        max_length=150,
+        blank=True,
+    )
+
+    contact_type = models.CharField(
+        max_length=100,
+        blank=True,
+    )
 
     email_consent = models.BooleanField(default=False)
     whatsapp_consent = models.BooleanField(default=False)
 
     notes = models.TextField(blank=True)
+
     is_active = models.BooleanField(default=True)
+
+    subscription_token = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+    )
 
     groups = models.ManyToManyField(
         Group,
@@ -39,17 +80,14 @@ class Person(models.Model):
         indexes = [
             models.Index(fields=["email"]),
             models.Index(fields=["whatsapp_number"]),
+            models.Index(fields=["phone_number"]),
+            models.Index(fields=["last_name"]),
+            models.Index(fields=["church_organization"]),
             models.Index(fields=["is_active"]),
         ]
 
     def __str__(self):
         return self.full_name
-    
-    subscription_token = models.UUIDField(
-        default=uuid.uuid4,
-        unique=True,
-        editable=False,
-    )
 
 class Campaign(models.Model):
     STATUS_DRAFT = "draft"
