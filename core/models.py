@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-
+import uuid
 
 class Group(models.Model):
     name = models.CharField(max_length=120, unique=True)
@@ -44,7 +44,12 @@ class Person(models.Model):
 
     def __str__(self):
         return self.full_name
-
+    
+    subscription_token = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+    )
 
 class Campaign(models.Model):
     STATUS_DRAFT = "draft"
