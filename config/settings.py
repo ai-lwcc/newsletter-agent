@@ -200,3 +200,8 @@ RATELIMIT_ENABLE = "pytest" not in sys.argv
 EMAIL_SEND_DELAY_SECONDS = int(
     os.getenv("EMAIL_SEND_DELAY_SECONDS", "30")
 )
+
+SITE_URL = os.getenv(
+    "SITE_URL",
+    "http://127.0.0.1:8000",
+)

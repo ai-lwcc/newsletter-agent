@@ -17,7 +17,9 @@ from .views import (
     delivery_logs,
     audit_logs,
     campaign_detail,
+    update_subscription,
 )
+from core import views
 
 urlpatterns = [
     path(
@@ -97,5 +99,10 @@ urlpatterns = [
         "campaigns/<int:campaign_id>/",
         campaign_detail,
         name="campaign_detail",
+    ),
+    path(
+        "subscription/<uuid:token>/",
+        views.update_subscription,
+        name="update_subscription",
     ),
 ]

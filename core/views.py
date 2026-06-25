@@ -22,7 +22,7 @@ from .campaign_send_service import (
 from .dry_run_service import create_campaign_dry_run_logs
 from .email_service import send_campaign_test_email
 from .forms import AICampaignCreateForm
-from .models import Campaign, CampaignAttachment, DeliveryLog, Group, UserActionLog
+from .models import Campaign, CampaignAttachment, DeliveryLog, Group, UserActionLog, Person
 from .recipient_service import get_campaign_recipients
 from .retry_service import retry_failed_campaign_emails
 from .schedule_status_service import get_campaign_schedule_status
@@ -729,5 +729,39 @@ def campaign_detail(request, campaign_id):
             "readiness_status": readiness_status,
             "readiness_message": readiness_message,
             "can_send_campaigns": is_newsletter_manager(request.user),
+        },
+    )
+
+def update_subscription(request, token):
+    person = get_object_or_404(
+        Person,
+        subscription_token=token,
+    )
+
+    if request.method == "POST":
+        person.email_consent = request.POST.get("email_consent") == "on"
+        person.whatsapp_consent = request.POST.get("whatsapp_consent") == "on"
+
+        person.save(
+            update_fields=[
+                "email_consent",
+                "whatsapp_consent",
+                "updated_at",
+            ]
+        )
+
+        return render(
+            request,
+            "core/subscription_updated.html",
+            {
+                "person": person,
+            },
+        )
+
+    return render(
+        request,
+        "core/update_subscription.html",
+        {
+            "person": person,
         },
     )

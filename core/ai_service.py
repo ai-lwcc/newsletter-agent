@@ -261,7 +261,6 @@ WRITING RULES:
 
    Chinese Email Body
 
-   Living Waters Counselling Centre
 
    Therefore:
    - email_subject should contain only the subject.

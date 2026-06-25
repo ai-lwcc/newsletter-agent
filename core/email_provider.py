@@ -4,11 +4,19 @@ from mimetypes import guess_type
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
-
+from django.urls import reverse
 
 class SMTPEmailProvider:
     def send_campaign_email(self, campaign, person):
         text_body = campaign.email_body or ""
+
+        subscription_update_url = (
+            settings.SITE_URL
+            + reverse(
+                "update_subscription",
+                kwargs={"token": person.subscription_token},
+            )
+        )
 
         html_body = render_to_string(
             "core/emails/campaign_email.html",
@@ -16,6 +24,7 @@ class SMTPEmailProvider:
                 "campaign": campaign,
                 "person": person,
                 "cover_cid": "cover_image",
+                "subscription_update_url": subscription_update_url,
             },
         )
 
