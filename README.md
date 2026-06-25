@@ -188,3 +188,18 @@ Planned implementation:
 * Add test WhatsApp sending
 * Add real WhatsApp sending with provider configuration
 * Keep WhatsApp sending separate from email sending
+
+## Communication Preferences
+
+Each contact has a unique communication preference link.
+
+Recipients can update:
+
+- Email consent
+- WhatsApp consent
+
+The link is included at the bottom of outgoing emails.
+
+If a recipient disables email updates, they will be excluded from future email campaigns.
+
+If a recipient disables WhatsApp updates, they will be excluded from future WhatsApp recipient lists.

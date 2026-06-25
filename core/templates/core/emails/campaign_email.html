@@ -35,18 +35,17 @@
         Community Counselling & Support Services
     </p>
 
-    <hr>
+        <hr>
+    {% if subscription_update_url %}
+        <p style="font-size:12px; color:#666;">
+            You are receiving this email because you are subscribed to updates from
+            Living Water Counselling Centre.
+        </p>
 
-    <p style="font-size:12px; color:#666;">
-        You are receiving this email because you are subscribed to updates from
-        Living Water Counselling Centre.
-    </p>
-
-    <p style="font-size:12px;">
-        <a href="{{ subscription_update_url }}">
-            Update your email or WhatsApp subscription preferences
-        </a>
-    </p>
-
+        <p style="font-size:12px; color:#666;">
+            Update your email subscription preferences
+            <a href="{{ subscription_update_url }}">here</a>.
+        </p>
+    {% endif %}
 </body>
 </html>

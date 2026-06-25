@@ -10,7 +10,7 @@ class SMTPEmailProvider:
     def send_campaign_email(self, campaign, person):
         text_body = campaign.email_body or ""
 
-        subscription_update_url = ""
+        subscription_update_url = "youtube.com"
 
         if getattr(person, "subscription_token", None):
             subscription_update_url = (
