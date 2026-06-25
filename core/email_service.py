@@ -7,6 +7,7 @@ class TestPerson:
     def __init__(self, email):
         self.email = email
         self.full_name = "Test Recipient"
+        subscription_token = None
 
 
 def send_campaign_test_email(campaign):

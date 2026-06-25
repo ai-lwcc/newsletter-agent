@@ -1,0 +1,53 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Update Subscription Preferences</title>
+    <link rel="stylesheet" href="{% static 'core/styles.css' %}">
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <h1>Update Subscription Preferences</h1>
+
+        <p>
+            Manage communication preferences for:
+            <strong>{{ person.email }}</strong>
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <p>
+                <label>
+                    <input
+                        type="checkbox"
+                        name="email_consent"
+                        {% if person.email_consent %}checked{% endif %}
+                    >
+                    Receive email updates
+                </label>
+            </p>
+
+            <p>
+                <label>
+                    <input
+                        type="checkbox"
+                        name="whatsapp_consent"
+                        {% if person.whatsapp_consent %}checked{% endif %}
+                    >
+                    Receive WhatsApp updates
+                </label>
+            </p>
+
+            <button class="button" type="submit">
+                Save Preferences
+            </button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

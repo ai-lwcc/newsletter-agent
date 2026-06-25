@@ -10,13 +10,16 @@ class SMTPEmailProvider:
     def send_campaign_email(self, campaign, person):
         text_body = campaign.email_body or ""
 
-        subscription_update_url = (
-            settings.SITE_URL
-            + reverse(
-                "update_subscription",
-                kwargs={"token": person.subscription_token},
+        subscription_update_url = ""
+
+        if getattr(person, "subscription_token", None):
+            subscription_update_url = (
+                settings.SITE_URL
+                + reverse(
+                    "update_subscription",
+                    kwargs={"token": person.subscription_token},
+                )
             )
-        )
 
         html_body = render_to_string(
             "core/emails/campaign_email.html",
