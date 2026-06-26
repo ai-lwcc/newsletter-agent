@@ -57,6 +57,26 @@
             </div>
         </div>
 
+        {% if contact_import.status == "imported" %}
+            <div class="card">
+                <h2>Import Completed</h2>
+
+                <div class="actions">
+                    <span class="badge">
+                        Created: {{ contact_import.import_result.created }}
+                    </span>
+
+                    <span class="badge">
+                        Updated: {{ contact_import.import_result.updated }}
+                    </span>
+
+                    <span class="badge">
+                        Skipped: {{ contact_import.import_result.skipped }}
+                    </span>
+                </div>
+            </div>
+        {% endif %}
+
         <div class="card">
             <h2>Groups To Create</h2>
 
@@ -79,20 +99,27 @@
             </p>
 
             <div class="actions">
-                <form
-                    method="post"
-                    action="{% url 'contact_import_confirm' contact_import.id %}"
+
+                {% if contact_import.status != "imported" %}
+                    <form
+                        method="post"
+                        action="{% url 'contact_import_confirm' contact_import.id %}"
+                    >
+                        {% csrf_token %}
+
+                        <button class="button safe" type="submit">
+                            Confirm Import
+                        </button>
+                    </form>
+                {% endif %}
+
+                <a
+                    class="button secondary"
+                    href="{% url 'contact_import_upload' %}"
                 >
-                    {% csrf_token %}
-
-                    <button class="button safe" type="submit">
-                        Confirm Import
-                    </button>
-                </form>
-
-                <a class="button secondary" href="{% url 'contact_import_upload' %}">
                     Upload Different File
                 </a>
+
             </div>
         </div>
     {% endif %}
