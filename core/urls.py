@@ -115,4 +115,9 @@ urlpatterns = [
         views.contact_import_preview,
         name="contact_import_preview",
     ),
+    path(
+        "contacts/import/<int:import_id>/confirm/",
+        views.contact_import_confirm,
+        name="contact_import_confirm",
+    ),
 ]

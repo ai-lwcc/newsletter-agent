@@ -836,3 +836,60 @@ def contact_import_preview(request, import_id):
             "contact_import": contact_import,
         },
     )
+
+@login_required
+def contact_import_confirm(request, import_id):
+    if not is_newsletter_manager(request.user):
+        return HttpResponseForbidden(
+            "You do not have permission to confirm contact imports."
+        )
+
+    if request.method != "POST":
+        return redirect(
+            "contact_import_preview",
+            import_id=import_id,
+        )
+
+    contact_import = get_object_or_404(ContactImport, id=import_id)
+
+    try:
+        rows = read_excel_contact_rows(contact_import.uploaded_file.path)
+        import_result = import_contact_rows(rows, dry_run=False)
+
+        contact_import.import_result = import_result
+        contact_import.status = ContactImport.STATUS_IMPORTED
+        contact_import.error_message = ""
+        contact_import.save(
+            update_fields=[
+                "import_result",
+                "status",
+                "error_message",
+                "updated_at",
+            ]
+        )
+
+        messages.success(
+            request,
+            "Contact import completed successfully.",
+        )
+
+    except Exception as error:
+        contact_import.status = ContactImport.STATUS_FAILED
+        contact_import.error_message = str(error)
+        contact_import.save(
+            update_fields=[
+                "status",
+                "error_message",
+                "updated_at",
+            ]
+        )
+
+        messages.error(
+            request,
+            "Contact import failed.",
+        )
+
+    return redirect(
+        "contact_import_preview",
+        import_id=contact_import.id,
+    )

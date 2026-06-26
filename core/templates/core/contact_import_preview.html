@@ -79,9 +79,16 @@
             </p>
 
             <div class="actions">
-                <a class="button safe" href="#">
-                    Confirm Import
-                </a>
+                <form
+                    method="post"
+                    action="{% url 'contact_import_confirm' contact_import.id %}"
+                >
+                    {% csrf_token %}
+
+                    <button class="button safe" type="submit">
+                        Confirm Import
+                    </button>
+                </form>
 
                 <a class="button secondary" href="{% url 'contact_import_upload' %}">
                     Upload Different File
