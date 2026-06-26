@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
 
-from .models import Campaign, DeliveryLog, Group, Person, CampaignAttachment, UserActionLog
+from .models import Campaign, DeliveryLog, Group, Person, CampaignAttachment, UserActionLog, ContactImport
 
 
 @admin.register(Group)
@@ -193,3 +193,24 @@ class UserActionLogAdmin(admin.ModelAdmin):
 
     ordering = ("-created_at",)
     list_per_page = 50
+
+@admin.register(ContactImport)
+class ContactImportAdmin(admin.ModelAdmin):
+    list_display = (
+        "original_filename",
+        "status",
+        "created_by",
+        "created_at",
+    )
+    list_filter = ("status", "created_at")
+    search_fields = (
+        "original_filename",
+        "error_message",
+    )
+    readonly_fields = (
+        "preview_result",
+        "import_result",
+        "error_message",
+        "created_at",
+        "updated_at",
+    )

@@ -401,3 +401,59 @@ class UserActionLog(models.Model):
 
     def __str__(self):
         return f"{self.action} by {self.user} at {self.created_at}"
+
+class ContactImport(models.Model):
+    STATUS_UPLOADED = "uploaded"
+    STATUS_PREVIEWED = "previewed"
+    STATUS_IMPORTED = "imported"
+    STATUS_FAILED = "failed"
+
+    STATUS_CHOICES = [
+        (STATUS_UPLOADED, "Uploaded"),
+        (STATUS_PREVIEWED, "Previewed"),
+        (STATUS_IMPORTED, "Imported"),
+        (STATUS_FAILED, "Failed"),
+    ]
+
+    uploaded_file = models.FileField(
+        upload_to="contact_imports/",
+    )
+
+    original_filename = models.CharField(
+        max_length=255,
+        blank=True,
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_UPLOADED,
+    )
+
+    preview_result = models.JSONField(
+        default=dict,
+        blank=True,
+    )
+
+    import_result = models.JSONField(
+        default=dict,
+        blank=True,
+    )
+
+    error_message = models.TextField(blank=True)
+
+    created_by = models.ForeignKey(
+        "auth.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.original_filename or self.uploaded_file.name
