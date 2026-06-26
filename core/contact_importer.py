@@ -89,7 +89,77 @@ def get_dynamic_group_names(row_data):
     return sorted(set(group_names))
 
 
-def import_contact_rows(rows):
+def build_person_defaults(row_data):
+    return {
+        "full_name": clean_value(row_data.get("Full Name")),
+        "first_name": clean_value(row_data.get("First Name")),
+        "last_name": clean_value(row_data.get("Last Name")),
+        "phone_number": clean_value(
+            row_data.get("Phone")
+            or row_data.get("Phone Number")
+        ),
+        "whatsapp_number": clean_value(
+            row_data.get("WhatsApp")
+            or row_data.get("WhatsApp Number")
+        ),
+        "age": clean_value(row_data.get("Age")),
+        "address": clean_value(row_data.get("Address")),
+        "church_organization": clean_value(
+            row_data.get("Church/Organization")
+        ),
+        "emergency_contact": clean_value(
+            row_data.get("Emergency Contact")
+        ),
+        "emergency_contact_phone": clean_value(
+            row_data.get("Emergency Contact Phone")
+        ),
+        "referrer": clean_value(row_data.get("Referrer")),
+        "contact_type": clean_value(row_data.get("Contact Type")),
+        "notes": clean_value(row_data.get("Notes")),
+        "email_consent": parse_bool(row_data.get("Email Consent")),
+        "whatsapp_consent": parse_bool(row_data.get("WhatsApp Consent")),
+        "is_active": True,
+    }
+
+
+def preview_contact_rows(rows):
+    would_create = 0
+    would_update = 0
+    would_skip = 0
+    groups_to_create = set()
+
+    for row_data in rows:
+        email = clean_value(row_data.get("Email")).lower()
+        full_name = clean_value(row_data.get("Full Name"))
+
+        if not full_name or not is_valid_email(email):
+            would_skip += 1
+            continue
+
+        if Person.objects.filter(email=email).exists():
+            would_update += 1
+        else:
+            would_create += 1
+
+        for group_name in get_dynamic_group_names(row_data):
+            if not Group.objects.filter(name=group_name).exists():
+                groups_to_create.add(group_name)
+
+    return {
+        "created": 0,
+        "updated": 0,
+        "skipped": would_skip,
+        "would_create": would_create,
+        "would_update": would_update,
+        "would_skip": would_skip,
+        "groups_to_create": sorted(groups_to_create),
+    }
+
+
+def import_contact_rows(rows, dry_run=False):
+    if dry_run:
+        return preview_contact_rows(rows)
+
     created_count = 0
     updated_count = 0
     skipped_count = 0
@@ -102,36 +172,7 @@ def import_contact_rows(rows):
             skipped_count += 1
             continue
 
-        defaults = {
-            "full_name": full_name,
-            "first_name": clean_value(row_data.get("First Name")),
-            "last_name": clean_value(row_data.get("Last Name")),
-            "phone_number": clean_value(
-                row_data.get("Phone")
-                or row_data.get("Phone Number")
-            ),
-            "whatsapp_number": clean_value(
-                row_data.get("WhatsApp")
-                or row_data.get("WhatsApp Number")
-            ),
-            "age": clean_value(row_data.get("Age")),
-            "address": clean_value(row_data.get("Address")),
-            "church_organization": clean_value(
-                row_data.get("Church/Organization")
-            ),
-            "emergency_contact": clean_value(
-                row_data.get("Emergency Contact")
-            ),
-            "emergency_contact_phone": clean_value(
-                row_data.get("Emergency Contact Phone")
-            ),
-            "referrer": clean_value(row_data.get("Referrer")),
-            "contact_type": clean_value(row_data.get("Contact Type")),
-            "notes": clean_value(row_data.get("Notes")),
-            "email_consent": parse_bool(row_data.get("Email Consent")),
-            "whatsapp_consent": parse_bool(row_data.get("WhatsApp Consent")),
-            "is_active": True,
-        }
+        defaults = build_person_defaults(row_data)
 
         person, created = Person.objects.update_or_create(
             email=email,
@@ -159,4 +200,8 @@ def import_contact_rows(rows):
         "created": created_count,
         "updated": updated_count,
         "skipped": skipped_count,
+        "would_create": 0,
+        "would_update": 0,
+        "would_skip": skipped_count,
+        "groups_to_create": [],
     }

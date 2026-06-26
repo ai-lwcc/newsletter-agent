@@ -22,10 +22,10 @@ class Person(models.Model):
 
     email = models.EmailField(blank=True)
 
-    phone_number = models.CharField(max_length=30, blank=True)
-    whatsapp_number = models.CharField(max_length=30, blank=True)
+    phone_number = models.CharField(max_length=100, blank=True)
+    whatsapp_number = models.CharField(max_length=100, blank=True)
 
-    age = models.CharField(max_length=20, blank=True)
+    age = models.CharField(max_length=100, blank=True)
     address = models.TextField(blank=True)
 
     church_organization = models.CharField(
@@ -39,7 +39,7 @@ class Person(models.Model):
     )
 
     emergency_contact_phone = models.CharField(
-        max_length=30,
+        max_length=100,
         blank=True,
     )
 
