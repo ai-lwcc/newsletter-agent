@@ -27,6 +27,12 @@
             </a>
 
             {% if can_manage_contacts %}
+                <a class="button secondary" href="{% url 'contact_import_upload' %}">
+                    Import Contacts
+                </a>
+            {% endif %}
+
+            {% if can_manage_contacts %}
                 <a class="button secondary" href="/admin/core/person/">
                     Manage Contacts
                 </a>
