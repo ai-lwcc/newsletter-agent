@@ -1,5 +1,7 @@
-from core.models import Group, Person
 from openpyxl import load_workbook
+
+from core.models import Group, Person
+
 
 PERSON_FIELD_COLUMNS = {
     "First Name": "first_name",
@@ -22,23 +24,17 @@ PERSON_FIELD_COLUMNS = {
     "Notes": "notes",
 }
 
-REQUIRED_HEADERS = [
-    "Full Name",
-    "Email",
-]
+REQUIRED_HEADERS = ["Full Name", "Email"]
 
 
 def clean_value(value):
     if value is None:
         return ""
-
     return str(value).strip()
 
 
 def parse_bool(value):
-    value = clean_value(value).lower()
-
-    return value in [
+    return clean_value(value).lower() in [
         "yes",
         "true",
         "1",
@@ -49,15 +45,12 @@ def parse_bool(value):
 
 def is_valid_email(email):
     email = clean_value(email).lower()
-
     return "@" in email and "." in email
 
 
 def validate_headers(headers):
     missing_headers = [
-        header
-        for header in REQUIRED_HEADERS
-        if header not in headers
+        header for header in REQUIRED_HEADERS if header not in headers
     ]
 
     if missing_headers:
@@ -95,12 +88,10 @@ def build_person_defaults(row_data):
         "first_name": clean_value(row_data.get("First Name")),
         "last_name": clean_value(row_data.get("Last Name")),
         "phone_number": clean_value(
-            row_data.get("Phone")
-            or row_data.get("Phone Number")
+            row_data.get("Phone") or row_data.get("Phone Number")
         ),
         "whatsapp_number": clean_value(
-            row_data.get("WhatsApp")
-            or row_data.get("WhatsApp Number")
+            row_data.get("WhatsApp") or row_data.get("WhatsApp Number")
         ),
         "age": clean_value(row_data.get("Age")),
         "address": clean_value(row_data.get("Address")),
@@ -122,54 +113,84 @@ def build_person_defaults(row_data):
     }
 
 
+def empty_result():
+    return {
+        "created": 0,
+        "updated": 0,
+        "skipped": 0,
+        "would_create": 0,
+        "would_update": 0,
+        "would_skip": 0,
+        "created_people": [],
+        "updated_people": [],
+        "skipped_rows": [],
+        "groups_to_create": [],
+        "groups_created": [],
+    }
+
+
 def preview_contact_rows(rows):
-    would_create = 0
-    would_update = 0
-    would_skip = 0
+    result = empty_result()
     groups_to_create = set()
 
-    for row_data in rows:
+    for row_number, row_data in enumerate(rows, start=2):
         email = clean_value(row_data.get("Email")).lower()
         full_name = clean_value(row_data.get("Full Name"))
 
-        if not full_name or not is_valid_email(email):
-            would_skip += 1
+        if not full_name:
+            result["would_skip"] += 1
+            result["skipped"] += 1
+            result["skipped_rows"].append(
+                {"row": row_number, "reason": "Missing full name"}
+            )
+            continue
+
+        if not is_valid_email(email):
+            result["would_skip"] += 1
+            result["skipped"] += 1
+            result["skipped_rows"].append(
+                {"row": row_number, "reason": "Missing or invalid email"}
+            )
             continue
 
         if Person.objects.filter(email=email).exists():
-            would_update += 1
+            result["would_update"] += 1
+            result["updated_people"].append(full_name)
         else:
-            would_create += 1
+            result["would_create"] += 1
+            result["created_people"].append(full_name)
 
         for group_name in get_dynamic_group_names(row_data):
             if not Group.objects.filter(name=group_name).exists():
                 groups_to_create.add(group_name)
 
-    return {
-        "created": 0,
-        "updated": 0,
-        "skipped": would_skip,
-        "would_create": would_create,
-        "would_update": would_update,
-        "would_skip": would_skip,
-        "groups_to_create": sorted(groups_to_create),
-    }
+    result["groups_to_create"] = sorted(groups_to_create)
+    return result
 
 
 def import_contact_rows(rows, dry_run=False):
     if dry_run:
         return preview_contact_rows(rows)
 
-    created_count = 0
-    updated_count = 0
-    skipped_count = 0
+    result = empty_result()
+    groups_created = set()
 
-    for row_data in rows:
+    for row_number, row_data in enumerate(rows, start=2):
         email = clean_value(row_data.get("Email")).lower()
         full_name = clean_value(row_data.get("Full Name"))
 
-        if not full_name or not is_valid_email(email):
-            skipped_count += 1
+        if not full_name:
+            result["skipped"] += 1
+            result["skipped_rows"].append(
+                {"row": row_number, "reason": "Missing full name"}
+            )
+            continue
+
+        if not is_valid_email(email):
+            result["skipped"] += 1
+            result["skipped_rows"].append(
+                {"row": row_number, "reason": "Missing or invalid email"}
+            )
             continue
 
         defaults = build_person_defaults(row_data)
@@ -179,32 +200,30 @@ def import_contact_rows(rows, dry_run=False):
             defaults=defaults,
         )
 
-        group_names = get_dynamic_group_names(row_data)
-
         groups = []
 
-        for group_name in group_names:
-            group, _ = Group.objects.get_or_create(
+        for group_name in get_dynamic_group_names(row_data):
+            group, group_created = Group.objects.get_or_create(
                 name=group_name,
             )
+
+            if group_created:
+                groups_created.add(group_name)
+
             groups.append(group)
 
         person.groups.set(groups)
 
         if created:
-            created_count += 1
+            result["created"] += 1
+            result["created_people"].append(person.full_name)
         else:
-            updated_count += 1
+            result["updated"] += 1
+            result["updated_people"].append(person.full_name)
 
-    return {
-        "created": created_count,
-        "updated": updated_count,
-        "skipped": skipped_count,
-        "would_create": 0,
-        "would_update": 0,
-        "would_skip": skipped_count,
-        "groups_to_create": [],
-    }
+    result["groups_created"] = sorted(groups_created)
+    return result
+
 
 def read_excel_contact_rows(excel_path):
     workbook = load_workbook(excel_path)
