@@ -1,5 +1,5 @@
 from core.models import Group, Person
-
+from openpyxl import load_workbook
 
 PERSON_FIELD_COLUMNS = {
     "First Name": "first_name",
@@ -205,3 +205,17 @@ def import_contact_rows(rows, dry_run=False):
         "would_skip": skipped_count,
         "groups_to_create": [],
     }
+
+def read_excel_contact_rows(excel_path):
+    workbook = load_workbook(excel_path)
+    sheet = workbook.active
+
+    headers = [cell.value for cell in sheet[1]]
+    validate_headers(headers)
+
+    rows = []
+
+    for row in sheet.iter_rows(min_row=2, values_only=True):
+        rows.append(dict(zip(headers, row)))
+
+    return rows

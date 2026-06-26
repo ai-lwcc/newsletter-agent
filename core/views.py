@@ -22,11 +22,11 @@ from .campaign_send_service import (
 from .dry_run_service import create_campaign_dry_run_logs
 from .email_service import send_campaign_test_email
 from .forms import AICampaignCreateForm
-from .models import Campaign, CampaignAttachment, DeliveryLog, Group, UserActionLog, Person
+from .models import Campaign, CampaignAttachment, DeliveryLog, Group, UserActionLog, Person, ContactImport
 from .recipient_service import get_campaign_recipients
 from .retry_service import retry_failed_campaign_emails
 from .schedule_status_service import get_campaign_schedule_status
-
+from core.contact_importer import import_contact_rows, read_excel_contact_rows
 
 logger = logging.getLogger(__name__)
 
@@ -763,5 +763,76 @@ def update_subscription(request, token):
         "core/update_subscription.html",
         {
             "person": person,
+        },
+    )
+
+@login_required
+def contact_import_upload(request):
+    if not is_newsletter_manager(request.user):
+        return HttpResponseForbidden(
+            "You do not have permission to import contacts."
+        )
+
+    if request.method == "POST":
+        uploaded_file = request.FILES.get("uploaded_file")
+
+        if not uploaded_file:
+            messages.error(request, "Please upload an Excel file.")
+            return redirect("contact_import_upload")
+
+        contact_import = ContactImport.objects.create(
+            uploaded_file=uploaded_file,
+            original_filename=uploaded_file.name,
+            created_by=request.user,
+        )
+
+        return redirect(
+            "contact_import_preview",
+            import_id=contact_import.id,
+        )
+
+    return render(request, "core/contact_import_upload.html")
+
+@login_required
+def contact_import_preview(request, import_id):
+    if not is_newsletter_manager(request.user):
+        return HttpResponseForbidden(
+            "You do not have permission to preview contact imports."
+        )
+
+    contact_import = get_object_or_404(ContactImport, id=import_id)
+
+    try:
+        rows = read_excel_contact_rows(contact_import.uploaded_file.path)
+        preview_result = import_contact_rows(rows, dry_run=True)
+
+        contact_import.preview_result = preview_result
+        contact_import.status = ContactImport.STATUS_PREVIEWED
+        contact_import.error_message = ""
+        contact_import.save(
+            update_fields=[
+                "preview_result",
+                "status",
+                "error_message",
+                "updated_at",
+            ]
+        )
+
+    except Exception as error:
+        contact_import.status = ContactImport.STATUS_FAILED
+        contact_import.error_message = str(error)
+        contact_import.save(
+            update_fields=[
+                "status",
+                "error_message",
+                "updated_at",
+            ]
+        )
+
+    return render(
+        request,
+        "core/contact_import_preview.html",
+        {
+            "contact_import": contact_import,
         },
     )

@@ -105,4 +105,14 @@ urlpatterns = [
         views.update_subscription,
         name="update_subscription",
     ),
+    path(
+        "contacts/import/",
+        views.contact_import_upload,
+        name="contact_import_upload",
+    ),
+    path(
+        "contacts/import/<int:import_id>/preview/",
+        views.contact_import_preview,
+        name="contact_import_preview",
+    ),
 ]
