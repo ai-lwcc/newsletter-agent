@@ -352,7 +352,7 @@ def campaign_schedule_status(request, campaign_id):
 
 
 @login_required
-@safe_ratelimit(key="user", rate="5/h", block=True)
+@safe_ratelimit(key="user", rate="10/h", block=True)
 def campaign_generate_ai_draft(request, campaign_id):
     campaign = get_object_or_404(Campaign, id=campaign_id)
 
@@ -397,7 +397,7 @@ def campaign_accept_ai_groups(request, campaign_id):
 
 
 @login_required
-@safe_ratelimit(key="user", rate="5/h", block=True)
+@safe_ratelimit(key="user", rate="10/h", block=True)
 def ai_campaign_create(request):
     if request.method == "POST":
         form = AICampaignCreateForm(
@@ -441,7 +441,6 @@ def ai_campaign_create(request):
                 email_body="",
                 email_body_zh="",
                 whatsapp_message="",
-                primary_attachment=first_file,
                 scheduled_send_time=scheduled_send_time,
                 automatically_send_when_due=automatically_send_when_due,
                 status=campaign_status,

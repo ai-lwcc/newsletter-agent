@@ -1,6 +1,6 @@
 import logging
 import time
-
+import random
 from django.conf import settings
 from django.utils import timezone
 
@@ -131,7 +131,15 @@ def send_pending_campaign_emails(campaign):
                     send_delay_seconds,
                 )
 
-                time.sleep(send_delay_seconds)
+                minimum_delay = getattr(settings, "EMAIL_SEND_DELAY_MIN_SECONDS", 20)
+                maximum_delay = getattr(settings, "EMAIL_SEND_DELAY_MAX_SECONDS", 25)
+
+                delay_seconds = random.randint(
+                    minimum_delay,
+                    maximum_delay,
+                )
+
+                time.sleep(delay_seconds)
 
         except Exception as error:
             log.mark_failed(str(error))
