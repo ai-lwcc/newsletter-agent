@@ -132,7 +132,7 @@ def send_pending_campaign_emails(campaign):
                 )
 
                 minimum_delay = getattr(settings, "EMAIL_SEND_DELAY_MIN_SECONDS", 20)
-                maximum_delay = getattr(settings, "EMAIL_SEND_DELAY_MAX_SECONDS", 25)
+                maximum_delay = getattr(settings, "EMAIL_SEND_DELAY_MAX_SECONDS", 30)
 
                 delay_seconds = random.randint(
                     minimum_delay,
