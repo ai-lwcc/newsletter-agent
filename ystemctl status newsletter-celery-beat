@@ -1,0 +1,32 @@
+[0;1;32m●[0m newsletter-celery.service - Newsletter Agent Celery Worker
+     Loaded: loaded (]8;;file://Agent-MS-7C02/etc/systemd/system/newsletter-celery.service/etc/systemd/system/newsletter-celery.service]8;;; [0;1;32menabled[0m; preset: [0;1;32menabled[0m)
+     Active: [0;1;32mactive (running)[0m since Wed 2026-07-29 12:25:55 EDT; 1min 25s ago
+   Main PID: 1748 (celery)
+      Tasks: 13 (limit: 16906)
+     Memory: 738.4M (peak: 738.8M)
+        CPU: 2.037s
+     CGroup: /system.slice/newsletter-celery.service
+             ├─[0;38;5;245m1748 /home/smith/newsletter-agent/.venv/bin/python3 /home/smith/newsletter-agent/.venv/bin/celery -A config worker --loglevel=INFO[0m
+             ├─[0;38;5;245m1812 /home/smith/newsletter-agent/.venv/bin/python3 /home/smith/newsletter-agent/.venv/bin/celery -A config worker --loglevel=INFO[0m
+             ├─[0;38;5;245m1813 /home/smith/newsletter-agent/.venv/bin/python3 /home/smith/newsletter-agent/.venv/bin/celery -A config worker --loglevel=INFO[0m
+             ├─[0;38;5;245m1836 /home/smith/newsletter-agent/.venv/bin/python3 /home/smith/newsletter-agent/.venv/bin/celery -A config worker --loglevel=INFO[0m
+             ├─[0;38;5;245m1965 /home/smith/newsletter-agent/.venv/bin/python3 /home/smith/newsletter-agent/.venv/bin/celery -A config worker --loglevel=INFO[0m
+             ├─[0;38;5;245m2049 /home/smith/newsletter-agent/.venv/bin/python3 /home/smith/newsletter-agent/.venv/bin/celery -A config worker --loglevel=INFO[0m
+             ├─[0;38;5;245m2095 /home/smith/newsletter-agent/.venv/bin/python3 /home/smith/newsletter-agent/.venv/bin/celery -A config worker --loglevel=INFO[0m
+             ├─[0;38;5;245m2106 /home/smith/newsletter-agent/.venv/bin/python3 /home/smith/newsletter-agent/.venv/bin/celery -A config worker --loglevel=INFO[0m
+             ├─[0;38;5;245m2108 /home/smith/newsletter-agent/.venv/bin/python3 /home/smith/newsletter-agent/.venv/bin/celery -A config worker --loglevel=INFO[0m
+             ├─[0;38;5;245m2114 /home/smith/newsletter-agent/.venv/bin/python3 /home/smith/newsletter-agent/.venv/bin/celery -A config worker --loglevel=INFO[0m
+             ├─[0;38;5;245m2128 /home/smith/newsletter-agent/.venv/bin/python3 /home/smith/newsletter-agent/.venv/bin/celery -A config worker --loglevel=INFO[0m
+             ├─[0;38;5;245m2137 /home/smith/newsletter-agent/.venv/bin/python3 /home/smith/newsletter-agent/.venv/bin/celery -A config worker --loglevel=INFO[0m
+             └─[0;38;5;245m2138 /home/smith/newsletter-agent/.venv/bin/python3 /home/smith/newsletter-agent/.venv/bin/celery -A config worker --loglevel=INFO[0m
+
+Jul 29 12:25:56 Agent-MS-7C02 celery[1748]:                 .> celery           exchange=celery(direct) key=celery
+Jul 29 12:25:56 Agent-MS-7C02 celery[1748]:                 
+Jul 29 12:25:56 Agent-MS-7C02 celery[1748]: [tasks]
+Jul 29 12:25:56 Agent-MS-7C02 celery[1748]:   . core.tasks.debug_celery_task
+Jul 29 12:25:56 Agent-MS-7C02 celery[1748]:   . core.tasks.generate_campaign_ai_draft_task
+Jul 29 12:25:56 Agent-MS-7C02 celery[1748]:   . core.tasks.send_due_scheduled_campaigns
+Jul 29 12:25:57 Agent-MS-7C02 celery[1748]: [2026-07-29 12:25:57,525: INFO/MainProcess] Connected to redis://localhost:6379/0
+Jul 29 12:25:57 Agent-MS-7C02 celery[1748]: [2026-07-29 12:25:57,526: INFO/MainProcess] mingle: searching for neighbors
+Jul 29 12:25:58 Agent-MS-7C02 celery[1748]: [2026-07-29 12:25:58,532: INFO/MainProcess] mingle: all alone
+Jul 29 12:25:58 Agent-MS-7C02 celery[1748]: [2026-07-29 12:25:58,540: INFO/MainProcess] celery@Agent-MS-7C02 ready.

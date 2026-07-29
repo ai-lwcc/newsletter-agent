@@ -14,7 +14,17 @@
 
         <p>Your communication preferences have been saved.</p>
     </div>
+    <div class="actions">
+        <a
+            class="button secondary"
+            href="{% url 'update_subscription' person.subscription_token %}"
+        >
+            ← Back to Preferences
+        </a>
+    </div>
 </div>
+
+
 
 </body>
 </html>
