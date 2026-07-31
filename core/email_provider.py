@@ -10,7 +10,14 @@ class SMTPEmailProvider:
     def send_campaign_email(self, campaign, person):
         text_body = campaign.email_body or ""
 
-        subscription_update_url = "https://docs.google.com/forms/d/e/1FAIpQLSdRBrGWO8aAhC7R_uDbNxp9DtumvZb4XsENGYctFQmO_BcHUw/viewform?usp=preview"
+        if hasattr(person, "subscription_token") and person.subscription_token:
+            subscription_update_url = (
+                f"https://macaw-stubble-bobble.ngrok-free.dev/subscription/{person.subscription_token}"
+            )
+        else:
+            subscription_update_url = (
+                "https://macaw-stubble-bobble.ngrok-free.dev/subscription/"
+            )
 
         if getattr(person, "subscription_token", None):
             subscription_update_url = (

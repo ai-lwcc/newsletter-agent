@@ -75,7 +75,7 @@ def campaign_preview(request, campaign_id):
 
 
 @login_required
-@safe_ratelimit(key="user", rate="10/h", block=True)
+@safe_ratelimit(key="user", rate="20/h", block=True)
 def send_campaign_test_email_view(request, campaign_id):
     campaign = get_object_or_404(Campaign, id=campaign_id)
 
